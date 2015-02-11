@@ -1,0 +1,34 @@
+- What is this?
+
+Currently, this is just a MATLAB class together with some auxiliary functions that can be used to represent and manipulate polynomials in MATLAB.
+
+- What is this supposed to become?
+
+In time, the hope is that this will become a parser for moment problems (and possibly their duals) to be used in combination with yalmip (http://users.isy.liu.se/johanl/yalmip/).
+
+- How do I install this?
+
+Just copy the files into some folder on your MATLAB path.
+
+- How do I use this?  
+
+First declare your variables by typing
+
+pol x 2;
+pol y 3;
+
+This creates in your workspace a 2-dimensional vector of variables [x(1);x(2)] and a 3-dimensional vector of variables [y(1);y(2);y(3)]. You can then construct polynomials in these variables by combining them using elementary operations. For example,
+
+p = 2*x(1)^2*y(2)-5*y(1)^3;
+
+stores the polynomial 2x(1)^2y(2)-5y(1)^3 into p.
+
+You can also differentiate polynomials, for example 
+
+diff(p,x(1)) 
+
+returns
+
+4x(1)y(2).
+
+
