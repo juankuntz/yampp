@@ -15,7 +15,7 @@ classdef seq
             if isempty(varargin)
                 disp('Error: you must specify the dimension of the underlying space');
                 return
-            elseif ~isempty(varargin{2})
+            elseif nargin == 2
                 obj.ord = varargin{2};
                 obj.choose = ncktab(varargin{1}+varargin{2});
             end

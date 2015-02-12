@@ -4,6 +4,12 @@ function y = subsasgn(y,S,c)
 % all monomial vectors are the same length (that of the dimension of the
 % thingy)
 
+% Explain the three types of indexing...
+
+% Possible improvement in speed if argument is given sorted?
+
+% Juan Kuntz, 12/02/2015
+
 % Allow access to properties.
 
 if strcmp(S.type,'.') 
@@ -22,7 +28,7 @@ end
 
 % Direct access to sequence element mon.
 
-if y.dim > 1 && numel(S.subs) == y.dim && numel(c) == 1 
+if y.dim > 1 && numel(S.subs) == y.dim 
     for i = 1:numel(S.subs) % Extract indexes.
         mon(i) = S.subs{i};
     end
@@ -51,25 +57,16 @@ end
 
 mon = S.subs{1};
 
-% First check that all indexes are actually valid (that is monomials).
-
-test = 1;
-for i = 1:numel(mon)
-    if ~ismon(mon(i))
-        test = 0;
-    end
-end
-
-if test == 0
-    disp('The only polnoymials tha can be used  monomials can be used as indexes.');
-    return
-end
-
 % Coefficients specified by a matrix whose columns are exponents.
 
 if isdouble(mon)
-    % MISSING: Check that there are no repeated indexes.
+    % MISSING: Check that there are no repeated indexes. ALSO THAT ALL
+    % EXPONENTS ARE VALID
     for i = 1:numel(c) % SEARCHING HERE IS SUBOPTIMAL
+        if isempty(y.ord) || y.ord < sum(mon(:,i)) % Update order and choose table need be.
+            y.ord = sum(mon(:,i));
+            y.choose = ncktab(sum(mon(:,i))+y.dim);
+        end
         rank = igrlext(mon(:,i),y.choose);
         if isempty(y.coef)
             y.coef = [c(i);rank];
@@ -83,13 +80,31 @@ if isdouble(mon)
             end
         end
     end
+    return
 end
 
-% Final option, coefficients specified by a vector of monomials.
+% Final option, coefficients specified by a vector of monomials: First 
+% check that all indexes are actually valid (that is monomials).
 
+test = 1;
+for i = 1:numel(mon)
+    if ~ismon(mon(i))
+        test = 0;
+    end
+end
 
+if test == 0
+    disp('The only polnoymials tha can be used  monomials can be used as indexes.');
+    return
+end
+
+% Actually do the assignments.
 
 for i = 1:numel(c) % SEARCHING HERE IS SUBOPTIMAL
+    if isempty(y.ord) || y.ord < mon(i).deg % Update order and choose table need be.
+        y.ord = mon(i).deg;
+        y.choose = ncktab(mon(i).deg+y.dim);
+    end
     rank = mon(i).coef(2);
     if isempty(y.coef)
         y.coef = [c(i);rank];
