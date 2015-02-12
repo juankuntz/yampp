@@ -1,3 +1,4 @@
+
 function out = grlex(varargin)
 
 % Takes in two arguments, first n, then rank. Returns the multiindex
@@ -13,7 +14,7 @@ n = varargin{1}; rank = varargin{2};
 if n == 1
    out = rank - 1; 
    return
-elseif rank == 1
+elseif rank == 1 && nargin == 2
     out = zeros(n,1);
     return
 end
