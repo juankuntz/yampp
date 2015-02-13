@@ -5,8 +5,6 @@ function g = mtimes(p,q)
 
 % Juan Kuntz 08/02/2015
 
-
-
 % Case 1: Inner product between sdpvar (or seq) object and a pol object.
 
 if isa(q,'sdpvar') || isa(q,'seq')

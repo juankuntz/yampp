@@ -19,8 +19,11 @@ function out = computestring(p)
 
 % Construct the output string for the scalar polynomial p.
 
-if isempty(p.coef) % Zero polynomial is the one with no coefficients.
+if isempty(p.coef) % Constant polynomial
     out = '0';
+    return
+elseif numel(p.coef(1,:)) == 1 && p.coef(2,1) == 1
+    out = num2str(p.coef(1,1));
     return
 end
 

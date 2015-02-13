@@ -23,17 +23,27 @@ classdef pol
     methods % Add method, find basis element -- returns where in the basis said element is.
             % Add method var2loc    % Given isymbol and number of the symbol, returns what row in the basis matrix corresponds to said variable.
             
-            function obj = pol(s,n) % Constructor method
+            function obj = pol(varargin) % Constructor method
                 
-            if nargin == 0; % Create empty polynomial, for internal use.
+             % If only one argument is specified, construct constant
+             % polynomial. If no argument is specified, construct 0
+             % polynomial. This is used internally and to convert doubles
+             % to pols.
+             
+            if nargin <= 1;
                 obj.deg = 0;
                 obj.nvar = 0;
+                if nargin == 1  % Zero polynomial is identified with the one that has empty coef array.
+                    obj.coef = [varargin{1};1];
+                end
                 return
             end
-            if nargout > 0
-                disp('Error: pol() is used to declare independent variables, the user is not allowed to specify any output, pol on its own stores the output in the appropiate variable in the workspace (namely it creates a variable with the same symbol as the one specified by the user).')
-                return
-            end
+            
+            
+            % Otherwise we are declaring variables.
+            
+            s = varargin{1}; n = varargin{2};
+            
             if ~isa(s,'char') || ~isscalar(s)
                 disp('Error: The symbol s of the independent variable must be a single character.')
                 return
