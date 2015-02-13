@@ -1,18 +1,15 @@
 function g = mtimes(p,q)
 
 % Compute the matrix product of p and q (or the appropiate scalar product
-% at least one of them is scalar.
+% at least one of them is scalar. 
 
 % Juan Kuntz 08/02/2015
 
-j = 1;
+
 
 % Case 1: Inner product between sdpvar (or seq) object and a pol object.
 
-
 if isa(q,'sdpvar') || isa(q,'seq')
-    
-    
     if (min(size(q)) ~= 1 && isa(q,'sdpvar')) || ~isscalar(p) || (~isscalar(q) && isa(q,'seq'))
         disp('Error: Inner product between sdpvar and pol classes only implemented for scalars.');
         return
@@ -21,6 +18,7 @@ if isa(q,'sdpvar') || isa(q,'seq')
     % Compute inner product.
     g = 0;
     np = numel(p.coef(1,:));
+    j = 1;
     for i = 1:numel(q)
         if j <= np && p.coef(2,j) == i
             g = g + p.coef(1,j)*q(i);
