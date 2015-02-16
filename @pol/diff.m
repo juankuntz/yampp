@@ -61,7 +61,7 @@ end
 for i = 1:numel(p.coef(1,:))
     temp = grlext(p.nvar,p.coef(2,i),p.choose);
     if temp(logical(monox)) ~= 0 % That is, if variable x appears in the monomial.
-        dp.coef = [dp.coef,[temp(logical(monox))*p.coef(1,i);igrlext(temp-monox,x.choose)]];
+        dp.coef = [dp.coef,[temp(logical(monox))*p.coef(1,i);igrlext(temp-monox,p.choose)]];
     end
 end
 clear temp

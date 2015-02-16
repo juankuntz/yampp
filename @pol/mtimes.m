@@ -3,7 +3,7 @@ function g = mtimes(p,q)
 % Compute the matrix product of p and q (or the appropiate scalar product
 % at least one of them is scalar. 
 
-% Juan Kuntz 08/02/2015
+% Juan Kuntz, 08/02/2015, last edited 16/02/2015
 
 % Case 1: Inner product between sdpvar (or seq) object and a pol object.
 
@@ -14,7 +14,13 @@ if isa(q,'sdpvar') || isa(q,'seq')
     end
     
     % Compute inner product.
+    
     g = 0;
+    
+    if isempty(p.coef) % If p is the zero polynomial, return zero.
+        return
+    end
+    
     np = numel(p.coef(1,:));
     j = 1;
     for i = 1:numel(q)
