@@ -48,6 +48,10 @@ end
 monox = grlext(x.nvar,x.coef(2,1),x.choose); 
 dp = p; dp.coef = [];
 
+if isempty(p.coef) % If p is the zero polynomial, return the zero polynomial.
+    return
+end
+
 for i = 1:numel(p.coef(1,:))
     temp = grlext(p.nvar,p.coef(2,i),p.choose);
     if temp(logical(monox)) ~= 0 % That is, if variable x appears in the monomial.
