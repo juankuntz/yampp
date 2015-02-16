@@ -19,7 +19,7 @@ for i = 1:numel(p.var.symb)
     end
 end
 
-for i = 1:length(p.var.symb)
+for i = 1:numel(p.var.symb)
     test = 0;
     for j = 1:numel(both)
         if p.var.symb(i) == both(j)

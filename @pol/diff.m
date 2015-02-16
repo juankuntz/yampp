@@ -36,6 +36,12 @@ function dp = sdiff(p,x)
 % grlex/iglrex (there's clearly a pattern in how the ranks change when we
 % differentiate, just try it out.
 
+if isdouble(p) % If p is a double return the zero polynomial.
+    dp = x;
+    dp.coef = [];
+    return
+end
+
 [pnotx,xnotp] = varcomp(p,x);
 
 if ~isempty(xnotp.symb)
