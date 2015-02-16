@@ -42,6 +42,11 @@ g.choose = ncktab(g.nvar+g.deg);
 % Compute all individual products.
 
 n = sum(p.var.ncomp);
+
+if isempty(p.coef) || isempty(q.coef) % If either is the zero polynomial, return the zero polynomial.
+    return
+end
+
 I = numel(p.coef(1,:)); J = numel(q.coef(1,:));
 
 % Here we only need to call grlex I+J times and not IxJ times.
