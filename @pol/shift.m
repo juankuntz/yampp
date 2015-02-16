@@ -1,35 +1,61 @@
 function out = shift(p,y)
 
-% Shift sequence y by p.
+% Shift sequence varargin{2} (of class seq or sdpvar) by polynomial varargin{1}.
 
-% REMEMBER BECAUSE OF HOW sdpvar WORKS, THE OUTPUT MUST NEVER BE A SINGLE
-% CHARACTER (OTHERWISE WE ACCIDENTLY START REMAINING sdpvars). DO A TEST
-% FOR THIS USING VAROUT.
+% Currently it automatically matches the first variable of p with that of y
+% and so on. 
 
-% Juan Kuntz, 13/02/2015
+% Warning: Because of how the sdpvar class currently works, if the output
+% of this function is not stored in a variable whose name is a string of
+% length greater than one, then sdpvar will start remaining variables which
+% may confuse things. For example, if we pass out a single output y(2) and
+% this is stored in z = shift(p,y), then y(2) in y will be renamed as z...
+
+% Juan Kuntz, 13/02/2015, last edited 16/03/2015.
+
+% Check for valid arguments.
+
+if (~isa(y,'sdpvar') && ~isa(y,'seq')) || ~isa(p,'pol')
+    disp('Error: a pol object and either a seq object r passed when calling /yampp/@pol/shift');
+    return
+elseif isa(y,'seq') && y.dim ~= p.nvar
+    disp('Error: The dimension of the underlying space of the sequence must be the same as that of the polynomial');
+    return
+end
+
+if isa(y,'sdpvar') % Compute the order of sequence.
+    d = sum(grlex(p.nvar,numel(y)));
+else
+    d = y.ord;
+end
+
+
+% Compute the exponent vectors corresponding to every monomial in the
+% support of p.
 
 for i = 1:numel(p.coef(1,:))
     temp(:,i) = grlext(p.nvar,p.coef(2,i),p.choose);
 end
 
-% If y is sdpvar object
-    
+tab = ncktab(p.nvar+p.deg+d);  % Compute appropiate table for fast grlex igrlex use.
+
+% If y is sdpvar object.
+
 if isa(y,'sdpvar')
+
+    % out_a = sum_b (p_b)*(y_(a+b)) where p_b denote the coefficient of p
+    % corresponding to monomial b.
     
-    tab = ncktab(p.nvar+p.deg+sum(grlex(p.nvar,numel(y))));
-    
-    for i=1:numel(y)
-        tempi = grlext(p.nvar,i,tab);
+    for i=1:nchoosek(p.nvar+(d-p.deg),(d-p.deg));
+        tempi = grlext(p.nvar,i,tab);   
         test = 0;
         for j = 1:numel(p.coef(1,:))
-            temp2 = igrlext(tempi+temp(:,j),tab);
-            if temp2 <= numel(y) 
-                if test == 0
-                    test = 1;
-                    out(i,1) =  p.coef(1,j)*y(temp2);
-                else
-                    out(i,1) =  p.coef(1,j)*y(temp2) + out(i);
-                end
+            temp2 = igrlext(tempi+temp(:,j),tab);   
+            if test == 0
+                test = 1;
+                out(i,1) =  p.coef(1,j)*y(temp2);
+            else
+                out(i,1) =  p.coef(1,j)*y(temp2) + out(i);
             end
         end
         clear tempi
@@ -37,17 +63,20 @@ if isa(y,'sdpvar')
     return
 end
 
-% Else y is a seq object.
+% If y is a seq object.
 
-out = seq(p.nvar,p.deg+y.ord); % Initialise seq of appropiate dimension.
-tab = ncktab(p.nvar+p.deg+y.ord);
+out = seq(p.nvar,d-p.deg); % Initialise seq of appropiate dimension.
 
-ARRAY = y.coef; % This is needed because subsref for seq objects is not well developed (for example, it cannot handle y.coef(1,1) if y is seq).
+ARRAY = y.coef; % The variables ARRAY and ARRAY2 are a hack needed because subsref and subsasgn for seq objects is not well developed (for example, it cannot handle y.coef(1,1) if y is seq).
 ARRAY2 = [];
 
-for i = 1:numel(ARRAY(1,:))
+% out_a = sum_b (p_b)*(y_(a+b)) where p_b denote the coefficient of p
+% corresponding to monomial b.
+
+for i = 1:nchoosek(p.nvar+(d-p.deg),(d-p.deg));
     tempi = grlext(p.nvar,i,tab);
     test = 0;
+    
     for j = 1:numel(p.coef(1,:))
         temp2 = igrlext(tempi+temp(:,j),tab);
         I = bfind(ARRAY(2,:),temp2);
@@ -60,9 +89,7 @@ for i = 1:numel(ARRAY(1,:))
             end
         end
     end
-    clear tempi
-end
-
+    
 out.coef = ARRAY2;
 
 end
