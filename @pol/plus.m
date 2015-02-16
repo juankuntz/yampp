@@ -23,26 +23,18 @@ function g = splus(p,q)
 
 % Computes the sum of two scalars.
 
-% If p or q is a real number this is easy
+% If p or q is a double.
 
-if isdouble(p) || isempty(p.coef) || numel(p.coef(1,:)) == 1 &&  p.coef(2,1) == 1
+if isdouble(p) 
     g = q;
     if g.coef(2,1) == 1 % q has a nonzero zero-monomial term.
-        if isdouble(p)
-            g.coef(1,1) = g.coef(1,1) + p;
-        elseif ~isempty(p.coef)
-            g.coef(1,1) = g.coef(1,1) + p.coef(1,1);
-        end
+        g.coef(1,1) = g.coef(1,1) + p;
     else 
-        if isdouble(p)
-            g.coef = [[p;1],g.coef];
-        elseif isempty(p.coef)
-            g.coef = [p.coef,g.coef];
-        end
+        g.coef = [[p;1],g.coef];
     end
     return
 end
-if isdouble(q) || isempty(q.coef) || numel(q.coef(1,:)) == 1 &&  q.coef(2,1) == 1
+if isdouble(q) 
     g = splus(q,p);
     return
 end
@@ -61,6 +53,16 @@ else
         q.var = pnotq;
     end
 	g = p; 
+end
+
+% If q or p are the zero polynomial this is easy.
+
+if isempty(q.coef)
+    return
+elseif isempty(p.coef)
+    clear g
+    g = q;
+    return
 end
 
 % Set degree of g and generate choosetables

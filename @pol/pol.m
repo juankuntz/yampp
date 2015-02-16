@@ -39,7 +39,6 @@ classdef pol
                 return
             end
             
-            
             % Otherwise we are declaring variables.
             
             s = varargin{1}; n = varargin{2};
