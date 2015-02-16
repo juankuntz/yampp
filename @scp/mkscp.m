@@ -4,17 +4,69 @@ function mkscp(cp)
 
 % Juan Kuntz, 13/02/2015
 
+% Declare shorthands.
+
 n = cp.nvar; d = cp.relorder;
+
+% Clear any previous yalmip constraints.
+
+cp.ycons = [];
 
 % Initialise yalmip variables.
 
 cp.yvar = [];
 cp.yvar = sdpvar(nchoosek(n+2*d,2*d),1); 
+
 y = cp.yvar;
 
-% Clear any previous yalmip constraints.
+% Add mass constraints
 
-cp.ycons = [];
+if ~isempty(cp.mass)
+    cp.ycons = [cp.ycons,y(1) - cp.mass == 0];
+end
+% Add equality constraints.
+
+for i = 1:numel(cp.seqeqcon)
+    cp.ycons = [cp.ycons,cp.seqeqcon(i)*y == 0];
+end
+
+% Add (linear) inequality constraints 
+
+for i = 1:numel(cp.seqineqcon)
+    cp.ycons = [cp.ycons,cp.seqineqcon(i)*y >= 0];
+end
+
+% Add objective
+
+cp.yobj = [];
+for i = 1:numel(cp.obj)
+    cp.yobj = [cp.yobj,cp.obj(i)*y];
+end
+
+% Add moment constraints.
+
+switch cp.reltype
+    case 'D'
+        
+    case 'DD'
+        
+    case 'SDD'
+        
+    case 'FKW'
+        
+    case 'PSD'
+        psd(cp);
+end
+
+end
+
+
+function psd(cp)
+
+% Declare shorthands.
+
+n = cp.nvar; d = cp.relorder;
+y = cp.yvar;
 
 % PSD constraints
 
@@ -34,8 +86,9 @@ clear B; clear Ay;
 % Localising matrices constraints.
 
 for i = 1:numel(cp.supcon)
+    
     if 2*d < cp.supcon(i).deg
-        disp('Error: degree of one of the polynomials defining the support is too big'); % fix this.
+        disp(['Error: the degree of the ',num2str(i),'"s polynomial defining the support is too big']); % fix this.
         return
     end
     
@@ -55,8 +108,5 @@ for i = 1:numel(cp.supcon)
     clear temp Ay
 end
 
-for i = 1:numel(cp.seqeqcon)
-    cp.ycons = [cp.ycons,cp.seqeqcon(i)*y == 0];
-end
 end
 

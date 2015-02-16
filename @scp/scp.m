@@ -2,59 +2,73 @@ classdef scp < matlab.mixin.SetGet
     
     properties 
         nvar = [];          % Dimension of underlying space.
-        supeqcon = [];        % Equality constraints on the support of the measure, array of polnomials.
-        supineqcon = [];        % Ineqquality constraints on the support of the measure, array of polnomials.
+        var = [];           % Structure containing symbols and number of components, like for @pol.
+        
+        obj = [];           % Objective, or vector of objectives, to be specified via polynomials.
+        
+        mass = [];          % The mass of the measure.
+        supcon = [];        % Ineqquality constraints on the support of the measure, array of polnomials.
         seqeqcon = [];          % Linear equality constraints on sequence, array of sequences.
         seqineqcon = [];        % Linear inequality constraints on sequence, array of sequences.
         
-        
-        reltype = []; % Type of relaxation {LP,SOCP,FKW1,...,FKWD,SDP}
-        relorder = []; % Order of relaxation
+        reltype = [];   % Type of relaxation {D,DD,SDD,FKW,PSD}
+        relorder = [];  % Order of relaxation
+        FW = [];        % Specifies the k of the FkW relaxation
         
         status = []; % Solved, unsolved, etc.
         
         sol = []; % A cell array, each entry of which contains the info on some solution.
         ops = []; % Solver options.
         
+        yvar = []; % Stores the yalmip variables.
+        ycons = []; % Stores the above constraints translated into yalmip constraints.
+        yobj = []; % Stores the objective/s re-written in terms of the yalmip variables.
+        
     end
     
     methods
+        
+        % Class constructor
+        
         function obj = scp(varargin)
             if nargin ~= 0
-                obj.relorder = varargin{1};
+                obj.nvar = varargin{1};
+                obj.relorder = varargin{2};
             end
         end
         
-        function obj = set.supeqcon(obj,p)
+        % Property sets with error messages.
+        
+        function obj = set.obj(obj,p)
             if ~isa(p,'pol')
-                disp('Error: You must specify support constraints using polynomials.');
+                disp('Error: You must specify the objective/s constraints using polynomials.');
                 return
             end
-            obj.supeqcon = p;
+            obj.obj = p;
         end
         
-        function obj = set.supineqcon(obj,p)
+        function obj = set.supcon(obj,p)
             if ~isa(p,'pol')
-                disp('Error: You must specify support constraints using polynomials.');
+                disp('Error: You must specify the support constraints using polynomials.');
                 return
             end
-            obj.supineqcon = p;
+            obj.supcon = p;
         end
         
-        function obj = set.seqeqcon(obj,s)
-            if ~isa(p,'seq')
-                disp('Error: You must specify sequence constraints using sequences.');
+        function obj = set.seqeqcon(obj,p)
+            if ~isa(p,'pol')
+                disp('Error: You must specify the sequence constraints using polynomials.');
                 return
             end
-            obj.seqeqcon = s;
+            obj.seqeqcon = p;
         end
         
-        function obj = set.seqineqcon(obj,s)
-            if ~isa(p,'seq')
-                disp('Error: You must specify sequence constraints using sequences.');
+        function obj = set.seqineqcon(obj,p)
+            if ~isa(p,'pol')
+                disp('Error: You must specify the sequence constraints using polynomials.');
                 return
             end
-            obj.seqineqcon = s;
+            obj.seqineqcon = p;
         end
         
     end
