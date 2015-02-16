@@ -11,6 +11,7 @@ out = [];
 
 if n == 1
     out = d;
+    return
 elseif n == 2
     out = [0:d;d:-1:0];
     return
