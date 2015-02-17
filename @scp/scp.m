@@ -1,5 +1,10 @@
 classdef scp < matlab.mixin.SetGet
     
+    % Class definition for scp: meant to model moment problems (scp is 
+    % short for "sequence conic program").
+    
+    % Juan Kuntz, 16/02/2015, last edited 16/02/2015.
+    
     properties 
         nvar = [];          % Dimension of underlying space.
         var = [];           % Structure containing symbols and number of components, like for @pol.
@@ -23,6 +28,11 @@ classdef scp < matlab.mixin.SetGet
         yvar = []; % Stores the yalmip variables.
         ycons = []; % Stores the above constraints translated into yalmip constraints.
         yobj = []; % Stores the objective/s re-written in terms of the yalmip variables.
+        
+        A = [];
+        b = [];
+        F = [];
+        f = [];
         
     end
     
