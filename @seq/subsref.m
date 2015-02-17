@@ -17,6 +17,10 @@ end
 % Direct access to sequence element mon.
 
 if y.dim > 1 && numel(S.subs) == y.dim 
+    if isempty(y.coef) % If y is the zero sequence, just return zero
+        out = 0;
+        return
+    end
     for i = 1:numel(S.subs) % Extract indexes.
         mon(i) = S.subs{i};
     end
@@ -36,11 +40,17 @@ out = [];
 % Coefficients specified by a matrix whose columns are exponents.
 
 if isdouble(mon)
+    
+    if isempty(y.coef) % If y is the zero sequence, just return zeros
+        out = zeros(1,numel(mon(1,:)));
+        return
+    end
+    
     % MISSING: Check that there are no repeated indexes. ALSO THAT ALL
     % EXPONENTS ARE VALID
     for i = 1:numel(mon(1,:)) % SEARCHING HERE IS SUBOPTIMAL
         rank = igrlext(mon(:,i),y.choose);
-
+       
         I = bfind(y.coef(2,:),rank); % SEARCHING HERE IS SUBOPTIMAL
         if isempty(I)
             out = [out,0];
@@ -67,8 +77,14 @@ if test == 0
     return
 end
 
+
 % Actually do the assignments.
 
+if isempty(y.coef) % If y is the zero sequence, just return zeros
+        out = zeros(1,numel(mon));
+        return
+end
+    
 for i = 1:numel(mon) % SEARCHING HERE IS SUBOPTIMAL
     rank = mon(i).coef(2);
     I = bfind(y.coef(2,:),rank); % SEARCHING HERE IS SUBOPTIMAL
