@@ -120,17 +120,24 @@ for i = 1:numel(cp.supcon)
     % Construct localising matrix.
     
     B = hankelbasis(n,floor(d-cp.supcon(i).deg/2));
+    [temp,T] = shift(cp.supcon(i),y);   % Shift the sequence by the support polynomial.
     
-    % We need this when we recover the dual residues later.
+    % We need the follwing when we recover the dual residues later.
     
-    for j = 1:numel(B)
-        temp{j} = - B{i};
+    for j = 1:numel(cp.yvar) 
+        temp2{j} = zeros(size(B{1}));
+        for k = 1:numel(B)
+            Tt = T';
+            temp2{j} = temp2{j} - Tt(j,k)*B{k};
+        end
     end
-    cp.A{end+1} = temp;    
-    clear temp
+    
+    cp.A{end+1} = temp2;    
+    clear temp2
 
-    Ay = zeros(size(B{1}));
-    temp = shift(cp.supcon(i),y);
+    % Back to constructing the locasing matrix.
+    
+    Ay = zeros(size(B{1}));    
     
     for j = 1:nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2))
         Ay = Ay + B{j}*temp(j);

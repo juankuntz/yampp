@@ -64,7 +64,7 @@ switch cp.reltype
                 t(j,1) = dual(cp.ycons(j));
             end
             
-            cp.sol{end}.dres = cp.F'*t-cp.b{i}; 
+            cp.sol{end}.dres = cp.F'*t+cp.b{i}; 
             clear t;
             
             for j = 1:numel(cp.supcon)+1
@@ -80,9 +80,10 @@ switch cp.reltype
                 clear A;
             
                 cp.sol{end}.dres = cp.sol{end}.dres + temp;
-                
-                % ADD THE RESIDUES OF THE PSD CONSTRAINTS, X{i}>=0 for all
-                % i.
+            end
+            
+            for j = 1:numel(cp.supcon)+1
+                cp.sol{end}.dres = [cp.sol{end}.dres;min(eig(X{j}))];
             end
         end
         
