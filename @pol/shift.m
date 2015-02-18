@@ -1,4 +1,4 @@
-function out = shift(p,y)
+function varargout = shift(p,y)
 
 % Shift sequence varargin{2} (of class seq or sdpvar) by polynomial varargin{1}.
 
@@ -10,8 +10,12 @@ function out = shift(p,y)
 % length greater than one, then sdpvar will start remaining variables which
 % may confuse things. For example, if we pass out a single output y(2) and
 % this is stored in z = shift(p,y), then y(2) in y will be renamed as z...
-
-% Juan Kuntz, 13/02/2015, last edited 16/03/2015.
+%
+% Edit: Has the option of returning a second argument T that is the
+% transformation matrix from y to z = shift(p,y), that is z = Ty. This is
+% useful when computing the problem data.
+%
+% Juan Kuntz, 13/02/2015, last edited 18/03/2015.
 
 % Check for valid arguments.
 
@@ -29,6 +33,7 @@ else
     d = y.ord;
 end
 
+T = zeros(nchoosek(p.nvar+d-p.deg,d-p.deg),nchoosek(p.nvar+d,d)); % Initialise
 
 % Compute the exponent vectors corresponding to every monomial in the
 % support of p.
@@ -54,12 +59,16 @@ if isa(y,'sdpvar')
             if test == 0
                 test = 1;
                 out(i,1) =  p.coef(1,j)*y(temp2);
+                T(i,temp2) = T(i,temp2) + p.coef(1,j);
             else
                 out(i,1) =  p.coef(1,j)*y(temp2) + out(i);
+                T(i,temp2) = T(i,temp2) + p.coef(1,j);
             end
         end
         clear tempi
     end
+    varargout{1} = out;
+    varargout{2} = T;
     return
 end
 
@@ -84,12 +93,16 @@ for i = 1:nchoosek(p.nvar+(d-p.deg),(d-p.deg));
             if test == 0
                 test = 1;
                 ARRAY2 = [ARRAY2,[p.coef(1,j)*ARRAY(1,I);i]];
+                T(i,temp2) = T(i,temp2) + p.coef(1,j);
             else
                 ARRAY2(1,end) = ARRAY2(1,end) + p.coef(1,j)*ARRAY(1,I);
+                T(i,temp2) = T(i,temp2) + p.coef(1,j);
             end
         end
     end
     
 out.coef = ARRAY2;
 
+varargout{1} = out;
+varargout{2} = T;
 end
