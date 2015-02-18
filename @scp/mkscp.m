@@ -14,7 +14,7 @@ n = cp.nvar; d = cp.relorder;
 
 % Clear any previous yalmip constraints.
 
-cp.ycons = [];
+cp.ycons = []; cp.A = []; cp.b = []; cp.F = []; cp.f = []; % LATER MAKE OPTION THAT SKIPS RE-WRITING b F and f if we are just switching type of constraints.
 
 % Initialise yalmip variables.
 
@@ -34,14 +34,22 @@ end
 % Add equality constraints.
 
 for i = 1:numel(cp.seqeqcon)
-    cp.ycons = [cp.ycons,cp.seqeqcon(i)*y == 0];
     temp = coefficients(cp.seqeqcon(i))';
     cp.F = [cp.F; [temp,zeros(1,nchoosek(n+2*d,2*d)-numel(temp))]]; % Required later to compute dual residues.
     clear temp
     cp.f = [cp.f;0];
 end
 
-% Add (linear) inequality constraints NOT IMPLEMENTED
+cp.ycons = [cp.ycons,cp.F(2:end,:)*y == 0];
+
+% Add (linear) inequality constraints NOT IMPLEMENTED: CAREFUL WHEN
+% IMPLEMENTING, IT AFFECTS SOME INDEXING IN SOLVESCP.M. FOR EXAMPLE IN
+% switch cp.reltype
+%        case 'D'
+%            for j = 1:numel(cp.supcon)+1
+%                X{j} = dual(cp.ycons(2+j));
+%            end
+% WE WOULD HAVE TO SWAP dual(cp.ycons(3+j)) for dual(cp.ycons(2+j));
 
 % for i = 1:numel(cp.seqineqcon)
 %     cp.ycons = [cp.ycons,cp.seqineqcon(i)*y >= 0];
@@ -65,7 +73,7 @@ end
 
 switch cp.reltype
     case 'D'
-        
+        di(cp);
     case 'DD'
         
     case 'SDD'
@@ -78,14 +86,58 @@ end
 
 end
 
-function psd(cp)
+
+function di(cp) % D constraints.
 
 % Declare shorthands.
 
 n = cp.nvar; d = cp.relorder;
 y = cp.yvar;
 
-% PSD constraints
+tab = ncktab(n+2*d);
+
+% General moment constraint
+
+T = zeros(nchoosek(n+d,d),nchoosek(n+2*d,2*d));
+
+for j = 1:nchoosek(n+d,d)
+    T(j,igrlext(2*grlext(n,j,tab),tab)) = 1;
+    
+end
+       
+cp.ycons = [cp.ycons,T*y >= 0];
+cp.A{1} = T'; 
+
+% Localising constraints
+
+for i = 1:numel(cp.supcon)
+    
+    if 2*d < cp.supcon(i).deg
+        disp(['Error: the degree of the ',num2str(i),'"s polynomial defining the support is too big']); % fix this.
+        return
+    end
+    
+    l(1) = nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2));
+    l(2) = nchoosek(n+2*d-cp.supcon(i).deg,2*d-cp.supcon(i).deg);
+    
+    [temp,Tq] = shift(cp.supcon(i),y);   % Shift the sequence by the support polynomial.
+    
+    cp.ycons = [cp.ycons,T(1:l(1),1:l(2))*temp >= 0];
+    cp.A{end+1} = (T(1:l(1),1:l(2))*Tq)';
+    
+    clear temp Tq l
+end
+
+end
+
+function psd(cp) % PSD constraints.
+
+% Declare shorthands.
+
+n = cp.nvar; d = cp.relorder;
+y = cp.yvar;
+
+
 
 % Moment matrix constraint.
 

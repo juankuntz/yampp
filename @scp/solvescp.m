@@ -34,60 +34,91 @@ function solvescp(cp)
 
 mkscp(cp);
 
-% Actually solve
-switch cp.reltype
-    case 'D'
+% Shorthands
+
+n = cp.nvar; d = cp.relorder;
+
+for i = 1:numel(cp.obj)
+        temp = optimize(cp.ycons,cp.yobj(i),cp.ops); % Compute solution.
+
+        % Store solution.
         
-    case 'DD'
+        cp.sol{end+1}.reltype = cp.reltype;
         
-    case 'SDD'
+        cp.sol{end}.ycons = cp.ycons;
+        cp.sol{end}.relorder = d;
+        cp.sol{end}.obj = cp.obj(i);
+        cp.sol{end}.pval = double(cp.yobj(i));
+        cp.sol{end}.ppoint = seq(n,2*d,double(cp.yvar));
+        [cp.sol{end}.pres,~] = check(cp.ycons);
+        cp.sol{end}.info = temp; clear temp;
+
+        cp.sol{end}.dval = double(dual(cp.ycons(1)));
+
         
-    case 'FKW'
+        t = dual(cp.ycons(1)); % Dual of the mass constraint.
+        temp = dual(cp.ycons(2)); % Dual of the equality constraints
+        t(2:numel(temp)+1,1) = temp;
+        clear temp
         
-    case 'PSD'
-        for i = 1:numel(cp.obj)
-            temp = optimize(cp.ycons,cp.yobj(i),cp.ops); % Compute solution.
+        cp.sol{end}.dres = cp.F'*t; 
+        clear t;
+
             
-            % Store solution.
+    switch cp.reltype
+        case 'D'
             
-            cp.sol{end+1}.reltype = cp.reltype;
-            cp.sol{end}.relorder = cp.relorder;
-            cp.sol{end}.obj = cp.obj(i);
-            cp.sol{end}.pval = double(cp.yobj(i));
-            cp.sol{end}.ppoint = seq(cp.nvar,2*cp.relorder,double(cp.yvar));
-            [cp.sol{end}.pres,~] = check(cp.ycons);
-            cp.sol{end}.info = temp; clear temp;
+            % This is strange, but it seems we need to switch the sign here
+            % depending on whether it's an LP, SOCP, or SDP...
             
-            cp.sol{end}.dval = double(dual(cp.ycons(1)));
+            cp.sol{end}.dres = cp.sol{end}.dres - cp.b{i};
             
-            for j = 1:numel(cp.seqeqcon)+1
-                t(j,1) = dual(cp.ycons(j));
-            end
-            
-            cp.sol{end}.dres = cp.F'*t+cp.b{i}; 
-            clear t;
+            % Onto the support constraints.
             
             for j = 1:numel(cp.supcon)+1
-                X{j} = dual(cp.ycons(numel(cp.seqeqcon)+1+j));
+                X{j} = dual(cp.ycons(2+j));
             end
             
             for j = 1:numel(cp.supcon)+1
-                temp = [];
-                A = cp.A{j};
-                for k = 1:numel(cp.A{j})
-                    temp = [temp;sum(sum(X{j}.*A{k}))];
+                cp.sol{end}.dres = cp.sol{end}.dres + cp.A{j}*X{j};
+            end
+            
+            for j = 1:numel(cp.supcon)+1
+                cp.sol{end}.dres = [cp.sol{end}.dres;X{j}];
+            end
+        case 'DD'
+
+        case 'SDD'
+
+        case 'FKW'
+
+        case 'PSD'
+            
+            % This is strange, but it seems we need to switch the sign here
+            % depending on whether it's an LP, SOCP, or SDP...
+            
+            cp.sol{end}.dres = cp.sol{end}.dres + cp.b{i};
+            
+                for j = 1:numel(cp.supcon)+1
+                    X{j} = dual(cp.ycons(2+j));
                 end
-                clear A;
-            
-                cp.sol{end}.dres = cp.sol{end}.dres + temp;
-            end
-            
-            for j = 1:numel(cp.supcon)+1
-                cp.sol{end}.dres = [cp.sol{end}.dres;min(eig(X{j}))];
-            end
-        end
-        
-    case 'ALL'
+
+                for j = 1:numel(cp.supcon)+1
+                    temp = [];
+                    A = cp.A{j};
+                    for k = 1:numel(cp.A{j})
+                        temp = [temp;sum(sum(X{j}.*A{k}))];
+                    end
+                    clear A;
+
+                    cp.sol{end}.dres = cp.sol{end}.dres + temp;
+                end
+
+                for j = 1:numel(cp.supcon)+1
+                    cp.sol{end}.dres = [cp.sol{end}.dres;min(eig(X{j}))];
+                end
+        case 'ALL'
+    end
         
 end
 
