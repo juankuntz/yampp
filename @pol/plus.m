@@ -42,9 +42,7 @@ end
 % Make sure that p and q are written in the same variables and set g to be
 % p.
 
-if strcmp(p.var.symb,q.var.symb)
-    g = p; 
-else
+if ~strcmp(p.var.symb,q.var.symb)
     [pnotq,qnotp] = varcomp(p,q);
     if ~isempty(qnotp.symb)
         p.var = qnotp; 
@@ -52,8 +50,9 @@ else
     if ~isempty(pnotq)
         q.var = pnotq;
     end
-	g = p; 
 end
+
+g = p;
 
 % If q or p are the zero polynomial this is easy.
 
@@ -87,6 +86,7 @@ while i <= l
         g.coef = [g.coef(:,1:i-1),q.coef(:,j),g.coef(:,i:end)];
         j = j + 1;
         i = i + 1;
+        l = l + 1;
     else
         i = i + 1;
     end
