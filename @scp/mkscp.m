@@ -77,9 +77,9 @@ switch cp.reltype
     case 'DD'
         dd(cp);
     case 'SDD'
-        
+        sdd(cp);
     case 'FKW'
-        
+
     case 'PSD'
         psd(cp);
 end
@@ -133,7 +133,7 @@ end
 
 end
 
-function dd(cp) % D constraints.
+function dd(cp) % DD constraints.
 
 % Declare shorthands.
 
@@ -211,7 +211,84 @@ end
 
 end
 
+function sdd(cp) % SDD constraints.
 
+% Declare shorthands.
+
+n = cp.nvar; d = cp.relorder;
+y = cp.yvar; l2d = nchoosek(n+2*d,2*d);
+
+tab = ncktab(n+2*d);
+
+% General moment constraint
+
+mon = zeros(cp.nvar,l2d);
+r = zeros(cp.nvar,1);
+
+for i = 1:nchoosek(n+d,d) 
+    mon(:,i) = grlext(n,i,tab);
+    r(i) = igrlext(2*mon(:,i),tab);
+end
+
+l = 1;
+for i = 1:nchoosek(n+d,d)
+    for j = 1:i-1
+        
+        k = igrlext(mon(:,i)+mon(:,j),tab);
+        cp.ycons = [cp.ycons,cone([2*y(k);y(r(i))-y(r(j))],y(r(i))+y(r(j)))];
+        
+        T = zeros(3,l2d);
+        T(1,r(i)) = 1; T(1,r(j)) = 1;
+        T(2,k) = 2;
+        T(3,r(i)) = 1; T(3,r(j)) = -1;
+        
+        Tt{l} = T';
+        
+        l = l + 1;
+    end
+end
+
+cp.A{1} = T;  
+
+clear T 
+
+% Localising matrices constraints.
+
+for i = 1:numel(cp.supcon)
+    
+    if 2*d < cp.supcon(i).deg
+        disp(['Error: the degree of the ',num2str(i),'"s polynomial defining the support is too big']); % fix this.
+        return
+    end
+    
+    l2dn = nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2));
+    
+    [temp2,Tq2] = shift(cp.supcon(i),y);   % Shift the sequence by the support polynomial.
+    temp = temp2(1:l2dn);
+    Tq = Tq2(1:l2dn,:);
+    
+    l = 1;
+    for j = 1:nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2))
+        for k = 1:i-1
+
+            I = igrlext(mon(:,i)+mon(:,j),tab);
+            cp.ycons = [cp.ycons,cone([2*temp(I);temp(r(i))-temp(r(j))],temp(r(i))+temp(r(j)))];
+
+            T = zeros(3,l2d);
+            T(1,r(i)) = 1; T(1,r(j)) = 1;
+            T(2,I) = 2;
+            T(3,r(i)) = 1; T(3,r(j)) = -1;
+            
+            Tt{l} = Tq*T';
+            
+            l = l + 1;
+        end
+    end
+
+    cp.A{end+1} = Tt;  
+end
+
+end
 
 function psd(cp) % PSD constraints.
 
