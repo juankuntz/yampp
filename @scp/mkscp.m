@@ -105,7 +105,7 @@ for j = 1:nchoosek(n+d,d)
 end
        
 cp.ycons = [cp.ycons,T*y >= 0];
-cp.A{1} = T'; 
+cp.A{1} = -T'; 
 
 % Localising constraints
 
@@ -126,7 +126,7 @@ for i = 1:numel(cp.supcon)
     clear temp2 Tq2
     
     cp.ycons = [cp.ycons,T(1:l(1),1:l(2))*temp >= 0];
-    cp.A{end+1} = (T(1:l(1),1:l(2))*Tq)';
+    cp.A{end+1} = -(T(1:l(1),1:l(2))*Tq)';
     
     clear temp Tq l
 end
@@ -171,7 +171,7 @@ end
 clear f l mon k
 
 cp.ycons = [cp.ycons,T*y >= 0];
-cp.A{1} = T'; 
+cp.A{1} = -T'; 
 
 % Localising constraints
 
@@ -183,10 +183,10 @@ for i = 1:numel(cp.supcon)
     end
     
     l(1) = nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2));
-    l(2) = nchoosek(n+d,d) - l(1);
+    l(2) = nchoosek(n+d,d);
     l(3) = 0;
     for j = 1:l(1)
-        l(3) = l(3) + 2*(i-1);
+        l(3) = l(3) + 2*(j-1);
     end
     l(4) = nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2));
     
@@ -202,8 +202,7 @@ for i = 1:numel(cp.supcon)
     
     cp.ycons = [cp.ycons,C*temp >= 0]; 
     
-    
-    cp.A{end+1} = (C*Tq)';
+    cp.A{end+1} = -(C*Tq)';
     
     clear temp Tq l C
 end
@@ -242,13 +241,13 @@ for i = 1:nchoosek(n+d,d)
         T(2,k) = 2;
         T(3,r(i)) = 1; T(3,r(j)) = -1;
         
-        Tt{l} = T';
+        Tt{l} = -T';
         
         l = l + 1;
     end
 end
 
-cp.A{1} = T;  
+cp.A{1} = Tt;  
 
 clear T 
 
@@ -269,17 +268,17 @@ for i = 1:numel(cp.supcon)
     
     l = 1;
     for j = 1:nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2))
-        for k = 1:i-1
+        for k = 1:j-1
 
-            I = igrlext(mon(:,i)+mon(:,j),tab);
-            cp.ycons = [cp.ycons,cone([2*temp(I);temp(r(i))-temp(r(j))],temp(r(i))+temp(r(j)))];
+            I = igrlext(mon(:,j)+mon(:,k),tab);
+            cp.ycons = [cp.ycons,cone([2*temp(I);temp(r(j))-temp(r(k))],temp(r(j))+temp(r(k)))];
 
             T = zeros(3,l2d);
-            T(1,r(i)) = 1; T(1,r(j)) = 1;
+            T(1,r(j)) = 1; T(1,r(k)) = 1;
             T(2,I) = 2;
-            T(3,r(i)) = 1; T(3,r(j)) = -1;
+            T(3,r(j)) = 1; T(3,r(k)) = -1;
             
-            Tt{l} = Tq*T';
+            Tt{l} = -Tq*T';
             
             l = l + 1;
         end

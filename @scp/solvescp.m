@@ -48,12 +48,12 @@ for i = 1:numel(cp.obj)
         cp.sol{end}.ycons = cp.ycons;
         cp.sol{end}.relorder = d;
         cp.sol{end}.obj = cp.obj(i);
-        cp.sol{end}.pval = double(cp.yobj(i));
-        cp.sol{end}.ppoint = seq(n,2*d,double(cp.yvar));
+        cp.sol{end}.pval = value(cp.yobj(i));
+        cp.sol{end}.ppoint = seq(n,2*d,value(cp.yvar));
         [cp.sol{end}.pres,~] = check(cp.ycons);
         cp.sol{end}.info = temp; clear temp;
 
-        cp.sol{end}.dval = double(dual(cp.ycons(1)));
+        cp.sol{end}.dval = -value(dual(cp.ycons(1))); % Not sure why we need the minus sign here...
 
         
         t = dual(cp.ycons(1)); % Dual of the mass constraint.
@@ -66,12 +66,12 @@ for i = 1:numel(cp.obj)
 
             
     switch cp.reltype
-        case 'D'
+        case 'D' 
             
             % This is strange, but it seems we need to switch the sign here
             % depending on whether it's an LP, SOCP, or SDP...
             
-            cp.sol{end}.dres = cp.sol{end}.dres - cp.b{i};
+            cp.sol{end}.dres = cp.sol{end}.dres + cp.b{i};
             
             % Onto the support constraints.
             
@@ -86,8 +86,9 @@ for i = 1:numel(cp.obj)
             for j = 1:numel(cp.supcon)+1
                 cp.sol{end}.dres = [cp.sol{end}.dres;X{j}];
             end
+            
         case 'DD'
-
+            
         case 'SDD'
 
         case 'FKW'
