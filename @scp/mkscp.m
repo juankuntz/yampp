@@ -75,7 +75,7 @@ switch cp.reltype
     case 'D'
         di(cp);
     case 'DD'
-        
+        dd(cp);
     case 'SDD'
         
     case 'FKW'
@@ -102,7 +102,6 @@ T = zeros(nchoosek(n+d,d),nchoosek(n+2*d,2*d));
 
 for j = 1:nchoosek(n+d,d)
     T(j,igrlext(2*grlext(n,j,tab),tab)) = 1;
-    
 end
        
 cp.ycons = [cp.ycons,T*y >= 0];
@@ -118,9 +117,13 @@ for i = 1:numel(cp.supcon)
     end
     
     l(1) = nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2));
-    l(2) = nchoosek(n+2*d-cp.supcon(i).deg,2*d-cp.supcon(i).deg);
+    l(2) = nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2));
     
-    [temp,Tq] = shift(cp.supcon(i),y);   % Shift the sequence by the support polynomial.
+    [temp2,Tq2] = shift(cp.supcon(i),y);   % Shift the sequence by the support polynomial.
+    temp = temp2(1:l(2)); 
+    Tq = Tq2(1:l(2),:);
+    
+    clear temp2 Tq2
     
     cp.ycons = [cp.ycons,T(1:l(1),1:l(2))*temp >= 0];
     cp.A{end+1} = (T(1:l(1),1:l(2))*Tq)';
@@ -130,14 +133,92 @@ end
 
 end
 
-function psd(cp) % PSD constraints.
+function dd(cp) % D constraints.
 
 % Declare shorthands.
 
 n = cp.nvar; d = cp.relorder;
 y = cp.yvar;
 
+tab = ncktab(n+2*d);
 
+% General moment constraint
+
+l = nchoosek(n+2*d,2*d);
+T = zeros(nchoosek(n+d,d),l);
+
+mon = zeros(cp.nvar,l);
+
+% Diagonal entries of the moment matrix must be greater or equal than zero.
+
+for i = 1:nchoosek(n+d,d) 
+    mon(:,i) = grlext(n,i,tab);
+    T(i,igrlext(2*mon(:,i),tab)) = 1; %y_2a >= 0 
+end
+
+% Now the off-diagonal constaints.
+
+f = T*(1:l)';
+for i = 1:nchoosek(n+d,d)
+    for j = 1:i-1
+        T = [T;zeros(2,l)];
+        k = igrlext(mon(:,i)+mon(:,j),tab);
+        T(end-1,f(i)) = 1; T(end-1,f(j)) = 1; T(end-1,k) = -2; % y_2a+y_2b - 2y_(a+b)>=0
+        T(end,f(i)) = 1; T(end,f(j)) = 1; T(end,k) = 2; % y_2a+y_2b - 2y_(a+b)>=0
+    end
+end
+
+clear f l mon k
+
+cp.ycons = [cp.ycons,T*y >= 0];
+cp.A{1} = T'; 
+
+% Localising constraints
+
+for i = 1:numel(cp.supcon)
+    
+    if 2*d < cp.supcon(i).deg
+        disp(['Error: the degree of the ',num2str(i),'"s polynomial defining the support is too big']); % fix this.
+        return
+    end
+    
+    l(1) = nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2));
+    l(2) = nchoosek(n+d,d) - l(1);
+    l(3) = 0;
+    for j = 1:l(1)
+        l(3) = l(3) + 2*(i-1);
+    end
+    l(4) = nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2));
+    
+    
+    [temp2,Tq2] = shift(cp.supcon(i),y);   % Shift the sequence by the support polynomial.
+    temp = temp2(1:l(4));
+    Tq = Tq2(1:l(4),:);
+    
+    clear temp2 Tq2
+    
+    C = [T(1:l(1),1:l(4));              % Diagonal constaints
+        T(l(2)+1:l(2)+1+l(3),1:l(4))];  % Off diagonal constaints.
+    
+    cp.ycons = [cp.ycons,C*temp >= 0]; 
+    
+    
+    cp.A{end+1} = (C*Tq)';
+    
+    clear temp Tq l C
+end
+
+
+end
+
+
+
+function psd(cp) % PSD constraints.
+
+% Declare shorthands.
+
+n = cp.nvar; d = cp.relorder;
+y = cp.yvar;
 
 % Moment matrix constraint.
 
