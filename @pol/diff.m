@@ -66,8 +66,12 @@ for i = 1:numel(p.coef(1,:))
 end
 clear temp
 
-if ~isempty(dp.coef) % Make sure that monomials are in the correct order. 
+if ~isempty(dp.coef) % Make sure that monomials are in the correct order and update the degree.
     [temp,I] = sort(dp.coef(2,:));
     dp.coef = [dp.coef(1,I);temp];
+    dp.deg = sum(grlext(dp.nvar,dp.coef(2,end),ncktab(dp.deg+dp.nvar))); % Update degree.
+else
+    dp.deg = 0; % Update degree.
 end
+
 end
