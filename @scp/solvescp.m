@@ -41,14 +41,9 @@ n = cp.nvar; d = cp.relorder;
 for i = 1:numel(cp.obj)
     if strcmp(cp.minmax,'min')
         temp = optimize(cp.ycons,cp.yobj(i),cp.ops); % Compute solution.
-        
         cp.sol{end+1}.minmax = 'min';
-        
-
-        
     elseif strcmp(cp.minmax,'max')
         temp = optimize(cp.ycons,-cp.yobj(i),cp.ops);
-        
         cp.sol{end+1}.minmax = 'max';
         
     end
@@ -65,14 +60,31 @@ for i = 1:numel(cp.obj)
         cp.sol{end}.ppoint = seq(n,2*d,value(cp.yvar));
         [cp.sol{end}.pres,~] = check(cp.ycons);
         cp.sol{end}.info = temp; clear temp;
+        
+        if cp.sol{end}.info.problem == 1 
+            if strcmp(cp.minmax,'min')
+                cp.sol{end}.pval = inf;
+            else
+                cp.sol{end}.pval = -inf;
+            end
+        elseif cp.sol{end}.info.problem == 2
+            if strcmp(cp.minmax,'min')
+                cp.sol{end}.pval = -inf;
+            else
+                cp.sol{end}.pval = inf;
+            end
+        end
 
         cp.sol{end}.dval = -value(dual(cp.ycons(1))); % Not sure why we need the minus sign here...
 
-        
-        t = dual(cp.ycons(1)); % Dual of the mass constraint.
-        temp = dual(cp.ycons(2)); % Dual of the equality constraints
-        t(2:numel(temp)+1,1) = temp;
-        clear temp
+        if ~isempty(cp.mass) && ~isempty(cp.seqeqcon)
+            t = dual(cp.ycons(1)); % Dual of the mass constraint.
+            t(2:numel(cp.seqeqcon)+1,1) = dual(cp.ycons(2)); % Dual of the equality constraints
+        elseif ~isempty(cp.mass)
+            t = dual(cp.ycons(1)); % Dual of the mass constraint.
+        elseif ~isempty(cp.seqeqcon)
+            t = dual(cp.ycons(1)); % Dual of the equality constraints
+        end
         
         cp.sol{end}.dres = cp.F'*t; 
         clear t;
@@ -88,8 +100,14 @@ for i = 1:numel(cp.obj)
             
             % Onto the support constraints.
             
-            for j = 1:numel(cp.supcon)+1
-                X{j} = dual(cp.ycons(2+j));
+            for j = 1:numel(cp.supcon)+1        % Fish out the correct duals.
+                if ~isempty(cp.mass) && ~isempty(cp.seqeqcon) 
+                    X{j} = dual(cp.ycons(2+j));
+                elseif ~isempty(cp.mass) || ~isempty(cp.seqeqcon)
+                    X{j} = dual(cp.ycons(1+j));
+                else
+                    X{j} = dual(cp.ycons(j));
+                end
             end
             
             for j = 1:numel(cp.supcon)+1
@@ -135,7 +153,6 @@ for i = 1:numel(cp.obj)
                 for j = 1:numel(cp.supcon)+1
                     cp.sol{end}.dres = [cp.sol{end}.dres;min(eig(X{j}))];
                 end
-        case 'ALL'
     end
         
 end
