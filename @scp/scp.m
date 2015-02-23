@@ -10,6 +10,7 @@ classdef scp < matlab.mixin.SetGet
         var = [];           % Structure containing symbols and number of components, like for @pol.
         
         obj = [];           % Objective, or vector of objectives, to be specified via polynomials.
+        minmax = [];        % Specifies whether the objective should be min(obj) or max(obj).
         
         mass = [];          % The mass of the measure.
         supcon = [];        % Ineqquality constraints on the support of the measure, array of polnomials.

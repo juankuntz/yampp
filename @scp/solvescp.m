@@ -39,15 +39,28 @@ mkscp(cp);
 n = cp.nvar; d = cp.relorder;
 
 for i = 1:numel(cp.obj)
+    if strcmp(cp.minmax,'min')
         temp = optimize(cp.ycons,cp.yobj(i),cp.ops); % Compute solution.
+        
+        cp.sol{end+1}.minmax = 'min';
+        
+
+        
+    elseif strcmp(cp.minmax,'max')
+        temp = optimize(cp.ycons,-cp.yobj(i),cp.ops);
+        
+        cp.sol{end+1}.minmax = 'max';
+        
+    end
 
         % Store solution.
         
-        cp.sol{end+1}.reltype = cp.reltype;
+        cp.sol{end}.reltype = cp.reltype;
+        cp.sol{end}.obj = cp.obj(i);
         
         cp.sol{end}.ycons = cp.ycons;
         cp.sol{end}.relorder = d;
-        cp.sol{end}.obj = cp.obj(i);
+        
         cp.sol{end}.pval = value(cp.yobj(i));
         cp.sol{end}.ppoint = seq(n,2*d,value(cp.yvar));
         [cp.sol{end}.pres,~] = check(cp.ycons);
@@ -98,7 +111,11 @@ for i = 1:numel(cp.obj)
             % This is strange, but it seems we need to switch the sign here
             % depending on whether it's an LP, SOCP, or SDP...
             
-            cp.sol{end}.dres = cp.sol{end}.dres + cp.b{i};
+            if strcmp(cp.minmax,'min')
+                cp.sol{end}.dres = cp.sol{end}.dres + cp.b{i};
+            else
+                cp.sol{end}.dres = cp.sol{end}.dres - cp.b{i};
+            end
             
                 for j = 1:numel(cp.supcon)+1
                     X{j} = dual(cp.ycons(2+j));
