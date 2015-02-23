@@ -53,18 +53,23 @@ I = numel(p.coef(1,:)); J = numel(q.coef(1,:));
 % Here we only need to call grlex I+J times and not IxJ times.
 
 tempp = zeros(n,I); tempq = zeros(n,J);
+
 for i = 1:I
     tempp(:,i) = grlext(n,p.coef(2,i),g.choose);
 end
+
 for j = 1:J
     tempq(:,j) = grlext(n,q.coef(2,j),g.choose);
 end
 
 % The product of each pair of monomials.
 
+g.coef = zeros(2,J*I); l = 1;
 for i = 1:I
     for j = 1:J
-        g.coef = [g.coef,[p.coef(1,i)*q.coef(1,j);igrlext(tempp(:,i)+tempq(:,j),g.choose)]];
+        g.coef(1,l) = p.coef(1,i)*q.coef(1,j);
+        g.coef(2,l) = igrlext(tempp(:,i)+tempq(:,j),g.choose);
+        l = l + 1;
     end
 end
 clear I J tempp tempq
