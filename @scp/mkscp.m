@@ -26,7 +26,7 @@ y = cp.yvar;
 % Add mass constraints
 
 if ~isempty(cp.mass)
-    cp.ycons = [cp.ycons,y(1) - cp.mass == 0];
+    cp.ycons = [cp.ycons,y(1) == cp.mass];
     cp.F = [1,zeros(1,nchoosek(n+2*d,2*d)-1)];   % Required later to compute dual residues.
     cp.f = 1;
 end
@@ -198,7 +198,7 @@ for i = 1:numel(cp.supcon)
     clear temp2 Tq2
     
     C = [T(1:l(1),1:l(4));              % Diagonal constaints
-        T(l(2)+1:l(2)+1+l(3),1:l(4))];  % Off diagonal constaints.
+        T(l(2)+1:l(2)+l(3),1:l(4))];  % Off diagonal constaints.
     
     cp.ycons = [cp.ycons,C*temp >= 0]; 
     
@@ -310,10 +310,10 @@ clear temp
 
 Ay = zeros(size(B{1}));
 for i = 1:nchoosek(n+2*d,2*d)
-    Ay = Ay + B{i}*y(i);
+    Ay = Ay - (-B{i})*y(i);
 end
 
-cp.ycons = [cp.ycons,Ay >= 0];
+cp.ycons = [cp.ycons,Ay >= 0]; % C - A^T(y) >= 0
 
 clear B; clear Ay;
 
@@ -344,12 +344,12 @@ for i = 1:numel(cp.supcon)
     cp.A{end+1} = temp2;    
     clear temp2
 
-    % Back to constructing the locasing matrix.
+    % Back to constructing the localising matrix.
     
     Ay = zeros(size(B{1}));    
     
     for j = 1:nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2))
-        Ay = Ay + B{j}*temp(j);
+        Ay = Ay - (-B{j})*temp(j);
     end
     
     cp.ycons = [cp.ycons,Ay >= 0]; % Add localising matrix constraint.
