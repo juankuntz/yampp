@@ -102,7 +102,7 @@ for i = 1:numel(cp.obj)
         
         % Store yalmip output info.
         
-        cp.sol{end}.info = temp; clear temp;
+        cp.sol{end}.info = temp; clear temp temp2;
         
         % If problem is unbounded or infeasible store the appropiate +-inf
         % into the primal value.
@@ -163,12 +163,13 @@ for i = 1:numel(cp.obj)
                 temp = temp + cp.A{j}*X{j};
             end
             
-            cp.sol{end}.dres{1,2} = temp;   clear temp
+            cp.sol{end}.dres{1,2} = -max(abs(temp));   % Return Linfty norm of equality constraing violations
+            clear temp
             
-%             cp.sol{end}.dres{2,1} = 'Cone constraints';
-%             for j = 1:numel(cp.supcon)+1
-%                 cp.sol{end}.dres{2,2} = [cp.sol{end}.dres{2,2};min(X{j})];
-%             end
+            cp.sol{end}.dres{2,1} = 'Cone constraints';
+            for j = 1:numel(cp.supcon)+1
+                cp.sol{end}.dres{2,2} = [cp.sol{end}.dres{2,2};min(X{j})];
+            end
 
         case 'SDD'
             
@@ -182,11 +183,30 @@ for i = 1:numel(cp.obj)
             
             J = 1;
             for j = 1:numel(cp.supcon)+1
-                X{j} = [];
-                A = cp.A{j};
-                for k = 1:numel(A(1,:))
+                X{j} = []; A{j} = [];
+                temp2 = cp.A{j};
+                for k = 1:numel(temp2)
+                    A{j} = [A{j},temp2{k}];
                     X{j} = [X{j};dual(cp.ycons(L+J))];
                     J = J + 1;
+                end
+                clear temp2
+            end
+            
+            for j = 1:numel(cp.supcon)+1
+                temp = temp + A{j}*X{j};
+            end
+            
+            cp.sol{end}.dres{1,2} = -max(abs(temp));    % Return Linfty norm of equality constraing violations
+            clear temp
+            
+            cp.sol{end}.dres{2,1} = 'Cone constraints';
+            cp.sol{end}.dres{2,2} = [];
+            for j = 1:numel(cp.supcon)+1
+                temp = X{j};
+                cp.sol{end}.dres{2,2} = [cp.sol{end}.dres{2,2}; X{j}(1)-sqrt(X{j}(2)^2+X{j}(3)^2)];
+                for k = 2:numel(X{j})/3
+                    cp.sol{end}.dres{2,2} = min(cp.sol{end}.dres{2,2},X{j}((k-1)*3+1)-sqrt(X{j}((k-1)*3+2)^2+X{j}((k-1)*3+3)^2));
                 end
             end
             
@@ -215,7 +235,9 @@ for i = 1:numel(cp.obj)
                 temp = temp + temp2; clear temp2
             end
 
-            cp.sol{end}.dres{1,2} = temp; clear temp
+            cp.sol{end}.dres{1,2} = -max(abs(temp)); % Return Linfty norm of equality constraing violations
+            clear temp
+            
             cp.sol{end}.dres{2,2} = [];
             
             for j = 1:numel(cp.supcon)+1

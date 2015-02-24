@@ -249,7 +249,7 @@ end
 
 cp.A{1} = Tt;  
 
-clear T 
+clear T Tt
 
 % Localising matrices constraints.
 
@@ -273,18 +273,19 @@ for i = 1:numel(cp.supcon)
             I = igrlext(mon(:,j)+mon(:,k),tab);
             cp.ycons = [cp.ycons,cone([2*temp(I);temp(r(j))-temp(r(k))],temp(r(j))+temp(r(k)))];
 
-            T = zeros(3,l2d);
+            T = zeros(3,l2dn);
             T(1,r(j)) = 1; T(1,r(k)) = 1;
             T(2,I) = 2;
             T(3,r(j)) = 1; T(3,r(k)) = -1;
             
-            Tt{l} = -Tq*T';
+            Tt{l} = -Tq'*T';
             
             l = l + 1;
         end
     end
 
     cp.A{end+1} = Tt;  
+    clear T Tt
 end
 
 end
