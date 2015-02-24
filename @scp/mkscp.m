@@ -78,14 +78,13 @@ switch cp.reltype
         dd(cp);
     case 'SDD'
         sdd(cp);
-    case 'FKW'
-
+    case 'FWK'
+        fwk(cp);
     case 'PSD'
         psd(cp);
 end
 
 end
-
 
 function di(cp) % D constraints.
 
@@ -287,6 +286,82 @@ for i = 1:numel(cp.supcon)
     cp.A{end+1} = Tt;  
     clear T Tt
 end
+
+end
+
+function fwk(cp)
+
+% Declare shorthands.
+
+n = cp.nvar; d = cp.relorder;
+y = cp.yvar; FW = cp.FW;
+
+% Moment matrix constraint.
+
+B = hankelbasis(n,d);
+
+M = zeros(size(B{1}));
+for i = 1:nchoosek(n+2*d,2*d)
+    M = M - (-B{i})*y(i);
+end
+
+l = nchoosek(n+d,d);
+I = nchoosek(1:l,FW);
+
+for j = 1:numel(I(:,1))
+    cp.ycons = [cp.ycons,M(I(j,:),I(j,:)) >= 0];
+end
+
+clear temp Ay l I
+
+%% THIS SHOULD WORK (AND REDUCE THE SPEED ISSUES) BUT YALMIP RUNS OUT OF MEMORY.
+
+% Ays = []; X = []; Y = [];
+% for i = 1:numel(I(:,1))
+%     Ays = [Ays;vec(M(I(i,:),I(i,:)))];
+%     X = [X;(i-1)*FW*ones(FW^2,1)+vec(repmat((1:FW)',[1,FW]))];
+%     Y = [Y;(i-1)*FW*ones(FW^2,1)+vec(repmat(1:FW,[FW,1]))];
+% end
+% 
+% cp.ycons = [cp.ycons,sparse(X,Y,Ays,numel(I(:,1))*5,numel(I(:,1))*5) >= 0];
+
+clear l I Ay X Y
+
+% Localising matrices constraints.
+
+for i = 1:numel(cp.supcon)
+    
+    if 2*d < cp.supcon(i).deg
+        disp(['Error: the degree of the ',num2str(i),'"s polynomial defining the support is too big']); % fix this.
+        return
+    end
+    
+    % Construct localising matrix.
+    
+    B = hankelbasis(n,floor(d-cp.supcon(i).deg/2));
+    [temp,T] = shift(cp.supcon(i),y);   % Shift the sequence by the support polynomial.
+    
+    % Back to constructing the localising matrix.
+    
+    Ay = zeros(size(B{1}));    
+    
+    for j = 1:nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2))
+        Ay = Ay - (-B{j})*temp(j);
+    end
+
+    l = nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2));
+    I = nchoosek(1:l,FW);
+
+    if l < FW
+        cp.ycons = [cp.ycons,Ay >= 0];
+    else
+        for j = 1:numel(I(:,1))
+            cp.ycons = [cp.ycons,Ay(I(j,:),I(j,:)) >= 0];
+        end
+    end
+    clear temp Ay l I
+end
+
 
 end
 
