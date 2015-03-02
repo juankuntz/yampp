@@ -6,10 +6,11 @@ function v = monlist(x,d)
 
 n = numel(x);
 
-tab = nchoosek(n+d);
+tab = ncktab(n+d);
 
-for i = 1:nchoosek(n+d,d)
-    mon = igrlext(i,tab);
+v = pol(1);
+for i = 2:nchoosek(n+d,d)
+    mon = grlext(n,i,tab);
     v(i) = x^mon;
     clear mon
 end
