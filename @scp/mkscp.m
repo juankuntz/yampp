@@ -144,7 +144,7 @@ tab = ncktab(n+2*d);
 % General moment constraint
 
 l = nchoosek(n+2*d,2*d);
-T = zeros(3*nchoosek(n+d,d),l);
+T = zeros(nchoosek(n+d,d)^2,l);
 
 mon = zeros(cp.nvar,l);
 
@@ -157,16 +157,18 @@ end
 
 % Now the off-diagonal constaints.
 
-f = T*(1:l)';
+C = nchoosek(n+d,d);
+f = T(1:nchoosek(n+d,d),:)*(1:l)';
 for i = 1:nchoosek(n+d,d)
     for j = 1:i-1
+        C = C + 2;
         k = igrlext(mon(:,i)+mon(:,j),tab);
-        T(end-1,f(i)) = 1; T(end-1,f(j)) = 1; T(end-1,k) = -2; % y_2a+y_2b - 2y_(a+b)>=0
-        T(end,f(i)) = 1; T(end,f(j)) = 1; T(end,k) = 2; % y_2a+y_2b - 2y_(a+b)>=0
+        T(C-1,f(i)) = 1; T(end-1,f(j)) = 1; T(end-1,k) = -2; % y_2a+y_2b - 2y_(a+b)>=0
+        T(C,f(i)) = 1; T(end,f(j)) = 1; T(end,k) = 2; % y_2a+y_2b - 2y_(a+b)>=0
     end
 end
 
-clear f l mon k
+clear f l mon k C
 
 cp.ycons = [cp.ycons,T*y >= 0];
 cp.A{1} = -T'; 
