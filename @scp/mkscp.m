@@ -144,7 +144,7 @@ tab = ncktab(n+2*d);
 % General moment constraint
 
 l = nchoosek(n+2*d,2*d);
-T = zeros(nchoosek(n+d,d),l);
+T = zeros(3*nchoosek(n+d,d),l);
 
 mon = zeros(cp.nvar,l);
 
@@ -160,7 +160,6 @@ end
 f = T*(1:l)';
 for i = 1:nchoosek(n+d,d)
     for j = 1:i-1
-        T = [T;zeros(2,l)];
         k = igrlext(mon(:,i)+mon(:,j),tab);
         T(end-1,f(i)) = 1; T(end-1,f(j)) = 1; T(end-1,k) = -2; % y_2a+y_2b - 2y_(a+b)>=0
         T(end,f(i)) = 1; T(end,f(j)) = 1; T(end,k) = 2; % y_2a+y_2b - 2y_(a+b)>=0

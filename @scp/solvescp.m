@@ -181,20 +181,24 @@ for i = 1:numel(cp.obj)
                 L = 2;
             end
             
+            % Initialise SOC dual variables
+            
+            X{1} = zeros(3*nchoosek(n+d,d),1);
+            for j = 1:numel(cp.supcon)
+                X{j+1} = zeros(3*nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2),1));
+            end
+            
+            % Populate the SOC duals
+            
             J = 1;
             for j = 1:numel(cp.supcon)+1
-                X{j} = []; A{j} = [];
                 temp2 = cp.A{j};
                 for k = 1:numel(temp2)
-                    A{j} = [A{j},temp2{k}];
-                    X{j} = [X{j};dual(cp.ycons(L+J))];
+                    X{j}(1+3*(k-1):3*k,:) = dual(cp.ycons(L+J));
+                    temp = temp + temp2{k}*X{j}(1+3*(k-1):3*k,:);
                     J = J + 1;
                 end
                 clear temp2
-            end
-            
-            for j = 1:numel(cp.supcon)+1
-                temp = temp + A{j}*X{j};
             end
             
             cp.sol{end}.dres{1,2} = -max(abs(temp));    % Return Linfty norm of equality constraing violations
