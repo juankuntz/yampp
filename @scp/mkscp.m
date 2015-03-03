@@ -163,8 +163,8 @@ for i = 1:nchoosek(n+d,d)
     for j = 1:i-1
         C = C + 2;
         k = igrlext(mon(:,i)+mon(:,j),tab);
-        T(C-1,f(i)) = 1; T(end-1,f(j)) = 1; T(end-1,k) = -2; % y_2a+y_2b - 2y_(a+b)>=0
-        T(C,f(i)) = 1; T(end,f(j)) = 1; T(end,k) = 2; % y_2a+y_2b - 2y_(a+b)>=0
+        T(C-1,f(i)) = 1; T(C-1,f(j)) = 1; T(C-1,k) = -2; % y_2a+y_2b - 2y_(a+b)>=0
+        T(C,f(i)) = 1; T(C,f(j)) = 1; T(C,k) = 2; % y_2a+y_2b - 2y_(a+b)>=0
     end
 end
 
