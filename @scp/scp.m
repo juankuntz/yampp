@@ -30,6 +30,7 @@ classdef scp < matlab.mixin.SetGet
         ycons = []; % Stores the above constraints translated into yalmip constraints.
         yobj = []; % Stores the objective/s re-written in terms of the yalmip variables.
         
+        dualres = 0;
         A = [];
         b = [];
         F = [];

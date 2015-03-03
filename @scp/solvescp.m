@@ -121,7 +121,13 @@ for i = 1:numel(cp.obj)
             end
         end
 
-        % Compute and store the dual residues in a formated table.
+        % If dual residues not requested, exit (saves considerable time).
+        
+        if cp.dualres == 0
+            return
+        end
+        
+        % Compute and store the dual residues in a formated table.      
         
         if ~isempty(cp.mass) && ~isempty(cp.seqeqcon)
             t = dual(cp.ycons(1)); % Dual of the mass constraint.
@@ -146,109 +152,109 @@ for i = 1:numel(cp.obj)
 
         cp.sol{end}.dres{1,1} = 'Equality constraints';
             
-    switch cp.reltype
-        case {'D','DD'}
-            
-            for j = 1:numel(cp.supcon)+1
-                if isempty(cp.mass) && isempty(cp.seqeqcon)
-                    X{j} = dual(cp.ycons(j));
-                elseif isempty(cp.mass) || isempty(cp.seqeqcon)
-                    X{j} = dual(cp.ycons(1+j));
-                else
-                    X{j} = dual(cp.ycons(2+j));
-                end
-            end
-        
-            for j = 1:numel(cp.supcon)+1
-                temp = temp + cp.A{j}*X{j};
-            end
-            
-            cp.sol{end}.dres{1,2} = -max(abs(temp));   % Return Linfty norm of equality constraing violations
-            clear temp
-            
-            cp.sol{end}.dres{2,1} = 'Cone constraints';
-            for j = 1:numel(cp.supcon)+1
-                cp.sol{end}.dres{2,2} = [cp.sol{end}.dres{2,2};min(X{j})];
-            end
+        switch cp.reltype
+            case {'D','DD'}
 
-        case 'SDD'
-            
-            if isempty(cp.mass) && isempty(cp.seqeqcon)
-                L = 0;
-            elseif isempty(cp.mass) || isempty(cp.seqeqcon)
-                L = 1;
-            else
-                L = 2;
-            end
-            
-            % Initialise SOC dual variables
-            
-            X{1} = zeros(3*nchoosek(n+d,d),1);
-            for j = 1:numel(cp.supcon)
-                X{j+1} = zeros(3*nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2),1));
-            end
-            
-            % Populate the SOC duals
-            
-            J = 1;
-            for j = 1:numel(cp.supcon)+1
-                temp2 = cp.A{j};
-                for k = 1:numel(temp2)
-                    X{j}(1+3*(k-1):3*k,:) = dual(cp.ycons(L+J));
-                    temp = temp + temp2{k}*X{j}(1+3*(k-1):3*k,:);
-                    J = J + 1;
+                for j = 1:numel(cp.supcon)+1
+                    if isempty(cp.mass) && isempty(cp.seqeqcon)
+                        X{j} = dual(cp.ycons(j));
+                    elseif isempty(cp.mass) || isempty(cp.seqeqcon)
+                        X{j} = dual(cp.ycons(1+j));
+                    else
+                        X{j} = dual(cp.ycons(2+j));
+                    end
                 end
-                clear temp2
-            end
-            
-            cp.sol{end}.dres{1,2} = -max(abs(temp));    % Return Linfty norm of equality constraing violations
-            clear temp
-            
-            cp.sol{end}.dres{2,1} = 'Cone constraints';
-            cp.sol{end}.dres{2,2} = [];
-            for j = 1:numel(cp.supcon)+1
-                temp = X{j};
-                cp.sol{end}.dres{2,2} = [cp.sol{end}.dres{2,2}; X{j}(1)-sqrt(X{j}(2)^2+X{j}(3)^2)];
-                for k = 2:numel(X{j})/3
-                    cp.sol{end}.dres{2,2} = min(cp.sol{end}.dres{2,2},X{j}((k-1)*3+1)-sqrt(X{j}((k-1)*3+2)^2+X{j}((k-1)*3+3)^2));
-                end
-            end
-            
-        case 'FKW'
 
-        case 'PSD'
-            
-            for j = 1:numel(cp.supcon)+1
-                if isempty(cp.mass) && isempty(cp.seqeqcon)
-                    X{j} = dual(cp.ycons(j));
-                elseif isempty(cp.mass) || isempty(cp.seqeqcon)
-                    X{j} = dual(cp.ycons(1+j));
-                else
-                    X{j} = dual(cp.ycons(2+j));
+                for j = 1:numel(cp.supcon)+1
+                    temp = temp + cp.A{j}*X{j};
                 end
-            end
-        
-            for j = 1:numel(cp.supcon)+1
-                temp2 = [];
-                A = cp.A{j};
-                for k = 1:numel(cp.A{j})
-                    temp2 = [temp2;sum(sum(X{j}.*A{k}))];
-                end
-                clear A;
 
-                temp = temp + temp2; clear temp2
-            end
+                cp.sol{end}.dres{1,2} = -max(abs(temp));   % Return Linfty norm of equality constraing violations
+                clear temp
 
-            cp.sol{end}.dres{1,2} = -max(abs(temp)); % Return Linfty norm of equality constraing violations
-            clear temp
-            
-            cp.sol{end}.dres{2,2} = [];
-            
-            for j = 1:numel(cp.supcon)+1
                 cp.sol{end}.dres{2,1} = 'Cone constraints';
-                cp.sol{end}.dres{2,2} = [cp.sol{end}.dres{2,2};min(eig(X{j}))];
-            end
-    end
+                for j = 1:numel(cp.supcon)+1
+                    cp.sol{end}.dres{2,2} = [cp.sol{end}.dres{2,2};min(X{j})];
+                end
+
+            case 'SDD'
+
+                if isempty(cp.mass) && isempty(cp.seqeqcon)
+                    L = 0;
+                elseif isempty(cp.mass) || isempty(cp.seqeqcon)
+                    L = 1;
+                else
+                    L = 2;
+                end
+
+                % Initialise SOC dual variables
+
+                X{1} = zeros(3*nchoosek(n+d,d),1);
+                for j = 1:numel(cp.supcon)
+                    X{j+1} = zeros(3*nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2),1));
+                end
+
+                % Populate the SOC duals
+
+                J = 1;
+                for j = 1:numel(cp.supcon)+1
+                    temp2 = cp.A{j};
+                    for k = 1:numel(temp2)
+                        X{j}(1+3*(k-1):3*k,:) = dual(cp.ycons(L+J));
+                        temp = temp + temp2{k}*X{j}(1+3*(k-1):3*k,:);
+                        J = J + 1;
+                    end
+                    clear temp2
+                end
+
+                cp.sol{end}.dres{1,2} = -max(abs(temp));    % Return Linfty norm of equality constraing violations
+                clear temp
+
+                cp.sol{end}.dres{2,1} = 'Cone constraints';
+                cp.sol{end}.dres{2,2} = [];
+                for j = 1:numel(cp.supcon)+1
+                    temp = X{j};
+                    cp.sol{end}.dres{2,2} = [cp.sol{end}.dres{2,2}; X{j}(1)-sqrt(X{j}(2)^2+X{j}(3)^2)];
+                    for k = 2:numel(X{j})/3
+                        cp.sol{end}.dres{2,2} = min(cp.sol{end}.dres{2,2},X{j}((k-1)*3+1)-sqrt(X{j}((k-1)*3+2)^2+X{j}((k-1)*3+3)^2));
+                    end
+                end
+
+            case 'FKW'
+
+            case 'PSD'
+
+                for j = 1:numel(cp.supcon)+1
+                    if isempty(cp.mass) && isempty(cp.seqeqcon)
+                        X{j} = dual(cp.ycons(j));
+                    elseif isempty(cp.mass) || isempty(cp.seqeqcon)
+                        X{j} = dual(cp.ycons(1+j));
+                    else
+                        X{j} = dual(cp.ycons(2+j));
+                    end
+                end
+
+                for j = 1:numel(cp.supcon)+1
+                    temp2 = [];
+                    A = cp.A{j};
+                    for k = 1:numel(cp.A{j})
+                        temp2 = [temp2;sum(sum(X{j}.*A{k}))];
+                    end
+                    clear A;
+
+                    temp = temp + temp2; clear temp2
+                end
+
+                cp.sol{end}.dres{1,2} = -max(abs(temp)); % Return Linfty norm of equality constraing violations
+                clear temp
+
+                cp.sol{end}.dres{2,2} = [];
+
+                for j = 1:numel(cp.supcon)+1
+                    cp.sol{end}.dres{2,1} = 'Cone constraints';
+                    cp.sol{end}.dres{2,2} = [cp.sol{end}.dres{2,2};min(eig(X{j}))];
+                end
+        end
         
 end
 
