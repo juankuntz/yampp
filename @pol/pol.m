@@ -33,6 +33,10 @@ classdef pol
             if nargin <= 1;
                 obj.deg = 0;
                 obj.nvar = 0;
+                temp.symb = [];
+                temp.ncomp = [];
+                obj.var = temp;
+                clear temp
                 if nargin == 1  % Zero polynomial is identified with the one that has empty coef array.
                     obj.coef = [varargin{1};1];
                 end

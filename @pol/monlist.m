@@ -11,7 +11,7 @@ tab = ncktab(n+d);
 v = pol(1);
 for i = 2:nchoosek(n+d,d)
     mon = grlext(n,i,tab);
-    v(i) = x^mon;
+    v(i,1) = x^mon;
     clear mon
 end
 
