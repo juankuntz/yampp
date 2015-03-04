@@ -11,9 +11,7 @@ function out = coefficients(varargin)
 % equal than p.deg). If s is 'sparse' we return two arrays, the first
 % containing the coefficients, the second the respective ranks in grlex.
 
-% Warning: The sparse option needs fixing.
-
-% Juan Kuntz, 17/02/2015, last edited 03/03/2015
+% Juan Kuntz, 17/02/2015, last edited 04/03/2015
 
 p = varargin{1};
 
