@@ -31,8 +31,9 @@ end
 
 FIRST = 1; out = ''; n = sum(p.var.ncomp);
 
+TAB = ncktab(p.nvar+p.deg); % Avoids repeated calls to ncktab.
 for i = 1:numel(p.coef(1,:))
-    mono = grlext(n,p.coef(2,i),p.choose);
+    mono = grlext(n,p.coef(2,i),TAB);
     if p.coef(1,i)<0
         out =  strcat(out,'-');
     end

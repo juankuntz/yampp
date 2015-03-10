@@ -1,21 +1,23 @@
-function obj = updatecoef(obj,nvarsold,nsymbnew,oldsymb,oldchoose)
+function obj = updatecoef(obj,nvarsold,nsymbnew,oldsymb)
 
-% If there is a change in the order and/or number variables of the polynomial obj, this function
-% re-orders the coefficients of obj in the new grlex order. This function
-% is only called by the set.var method.
+% If there is a change in the order and/or number variables of the
+% polynomial obj, this function is called to re-order the coefficients of 
+% obj in the new grlex order. This function is only called by the set.var
+% method.
 
-% Juan Kuntz, 06/02/2015
+% Juan Kuntz, 06/02/2015, last edited 10/03/2015
 
-if isempty(obj.coef) % If its the zero polynomial we are done, there is no re-ordering of coefficients needed (there are no coefficients to reoder!).
+if isempty(obj.coef) % If obj is the zero polynomial we are done, there is no re-ordering of coefficients needed (there are no coefficients to reoder!).
     return
 end
 
 % Otherwise, re-order the existing coefficients by the grlex order in
-% the new variables (paying attention to the new
-% alphabetical ordering of the symbols).
+% the new variables (paying attention to the new alphabetical ordering of 
+% the symbols).
 
+TAB = ncktab(obj.nvar+obj.deg); % Avoids repeated calls to ncktab.
 for i = 1:numel(obj.coef(1,:))
-    oldmon = grlext(nvarsold,obj.coef(2,i),oldchoose); % Find the multiindex (in nvarsold number of variables) of the monomial corresponding to the coefficient obj.coef(2,i).
+    oldmon = grlext(nvarsold,obj.coef(2,i),TAB); % Find the multiindex (in nvarsold number of variables) of the monomial corresponding to the coefficient obj.coef(2,i).
 
     % Now re-write this multiindex in the new variables
     % (using the correcting new alphabetical ordering).
@@ -38,7 +40,7 @@ for i = 1:numel(obj.coef(1,:))
                 m = m + 1;
         end
     end
-    newrank = igrlext(newmon,obj.choose);
+    newrank = igrlext(newmon,TAB);
     tempcoef(:,i) = [obj.coef(1,i);newrank];
 
     clear newmon newrank

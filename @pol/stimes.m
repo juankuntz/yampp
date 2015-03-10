@@ -35,10 +35,13 @@ else
 	g = p; g.coef = []; 
 end
 
-% Set degree of g and generate choosetables
+% Set degree of g.
 
-g.deg = p.deg+q.deg; g.choose = [];
-g.choose = ncktab(g.nvar+g.deg);
+g.deg = p.deg+q.deg; 
+
+% Store choose table to avoid repeated calls to ncktab.
+
+TAB = ncktab(g.nvar+g.deg);
 
 % Compute all individual products.
 
@@ -55,11 +58,11 @@ I = numel(p.coef(1,:)); J = numel(q.coef(1,:));
 tempp = zeros(n,I); tempq = zeros(n,J);
 
 for i = 1:I
-    tempp(:,i) = grlext(n,p.coef(2,i),g.choose);
+    tempp(:,i) = grlext(n,p.coef(2,i),TAB);
 end
 
 for j = 1:J
-    tempq(:,j) = grlext(n,q.coef(2,j),g.choose);
+    tempq(:,j) = grlext(n,q.coef(2,j),TAB);
 end
 
 % The product of each pair of monomials.
@@ -68,7 +71,7 @@ g.coef = zeros(2,J*I); l = 1;
 for i = 1:I
     for j = 1:J
         g.coef(1,l) = p.coef(1,i)*q.coef(1,j);
-        g.coef(2,l) = igrlext(tempp(:,i)+tempq(:,j),g.choose);
+        g.coef(2,l) = igrlext(tempp(:,i)+tempq(:,j),TAB);
         l = l + 1;
     end
 end

@@ -8,8 +8,7 @@ function g = plus(p,q)
 [n,m] = size(p); 
 
 if ~isequal([n,m],size(q))
-    disp(['Error: ',p,' and ',q, 'must have the same dimension as vectors in order to compute their sum']);
-    return
+    error('Both polynomials to be summed must have the same dimension as vectors ');
 end
 
 for i = 1:n
@@ -64,10 +63,9 @@ elseif isempty(p.coef)
     return
 end
 
-% Set degree of g and generate choosetables
+% Set degree of g 
 
 g.deg = max(p.deg,q.deg);
-g.choose = ncktab(g.nvar+g.deg);
 
 % Add q into g.
 
