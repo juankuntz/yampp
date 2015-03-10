@@ -43,43 +43,6 @@ classdef pol
                 return
             end
             
-            % Otherwise we are declaring variables.
-            
-            s = varargin{1}; n = varargin{2};
-            
-            if ~isa(s,'char') || ~isscalar(s)
-                disp('Error: The symbol s of the independent variable must be a single character.')
-                return
-            end 
-            if isa(n,'char')
-                temp = n; clear n; n = str2double(temp); clear temp
-            end
-            if n-floor(n) ~= 0
-                disp('Error: The number c of independent variables must be an integer.')
-                return
-            end
-            obj(n,1) = pol;
-            tempchoose = ncktab(n+1);
-            for i = 1:n
-                temp.symb = s; temp.ncomp = n;
-                obj(i,1).var = temp;
-                obj(i,1).coef = [1;n+2-i]; % Declare coefficients in grlex order. However, this must be done after the variables are declared (otherwise the set.var function jumbles the coefficients).
-                obj(i,1).deg = 1;
-                obj(i,1).nvar = n;
-                obj(i,1).choose = tempchoose;
-                clear temp
-            end
-            clear tempchoose;
-            
-            % MAKE SURE VARIABLE S DOES NOT EXIST ALREADY, USE EVALIN
-            % FUNCTION FOR THIS.
-            
-            if evalin('caller',['exist(',sprintf( '\''' ),s,sprintf( '\''' ),')'])
-                disp(['Error: There already is some variable ',s,' defined in the workspace of the function that is trying to define these new variables.']);
-                return
-            end
-            assignin('caller',s,obj);
-            obj = pol;
             end
         
             function obj = set.var(obj,new)
