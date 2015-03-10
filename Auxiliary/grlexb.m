@@ -2,8 +2,9 @@ function out = grlexb(n,d)
 
 % Returns the multiindexes of degree d in n variables order in the grlex
 % order. If d is a vector, then grlexb returns the multiindexes of all the
-% degree contained in d. These are stored in a n x (number of multiindices)
-% output array.
+% degree contained in d. However, it will first sort d in order and
+% remove any repeated entries. The multiindexes are stored in a 
+% n x (number of multiindices) output array.
 
 % Juan Kuntz, 06/02/2015, last edited 10/03/2015
 
@@ -12,9 +13,11 @@ out = [];
 % If there are multiple degrees, call grelexb for each degree.
 
 if numel(d)>1
+    temp = d; clear d; d = unique(temp); clear temp; % Sort the entries of d and remove any repeated entries.
     for i = 1:numel(d)
         out = [out,grlexb(n,d(i))];
     end
+    return
 end
 
 % Easy base cases
