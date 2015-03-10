@@ -3,7 +3,7 @@ function dp = diff(p,x)
 % Computes the jacobian [dp(1)/dx(1),dp(1)/dx(2),...;
 % dp(2)/dx(1),dp(2)/dx(2),...; ... ].
 
-% Juan Kuntz, 09/02/2015.
+% Juan Kuntz, 09/02/2015, last edited 10/03/2015.
 
 % Check that x is a vector of variables.
 
@@ -51,17 +51,18 @@ elseif ~isempty(pnotx.symb)
     x.var = pnotx;
 end
 
-monox = grlext(x.nvar,x.coef(2,1),x.choose); 
+monox = grlext(x.nvar,x.coef(2,1),ncktab(x.nvar+x.deg)); 
 dp = p; dp.coef = [];
 
 if isempty(p.coef) % If p is the zero polynomial, return the zero polynomial.
     return
 end
 
+TAB = ncktab(p.nvar+p.deg);
 for i = 1:numel(p.coef(1,:))
-    temp = grlext(p.nvar,p.coef(2,i),p.choose);
+    temp = grlext(p.nvar,p.coef(2,i),TAB);
     if temp(logical(monox)) ~= 0 % That is, if variable x appears in the monomial.
-        dp.coef = [dp.coef,[temp(logical(monox))*p.coef(1,i);igrlext(temp-monox,p.choose)]];
+        dp.coef = [dp.coef,[temp(logical(monox))*p.coef(1,i);igrlext(temp-monox,TAB)]];
     end
 end
 clear temp

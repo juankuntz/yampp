@@ -19,8 +19,9 @@ end
 g = q(1); % g has the same variables as q.
 g.coef = []; % g is the zero polynomial for now.
 
+TAB = ncktab(p.nvar+p.deg);
 for i = 1:numel(p.coef(1,:))
-    monop = grlext(p.nvar,p.coef(2,i),p.choose);
+    monop = grlext(p.nvar,p.coef(2,i),TAB);
     g = g + p.coef(1,i)*q^monop;
 end
 

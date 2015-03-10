@@ -15,7 +15,7 @@ function varargout = shift(p,y)
 % transformation matrix from y to z = shift(p,y), that is z = Ty. This is
 % useful when computing the problem data.
 %
-% Juan Kuntz, 13/02/2015, last edited 18/03/2015.
+% Juan Kuntz, 13/02/2015, last edited 10/03/2015.
 
 % Check for valid arguments.
 
@@ -38,11 +38,11 @@ T = zeros(nchoosek(p.nvar+d-p.deg,d-p.deg),nchoosek(p.nvar+d,d)); % Initialise
 % Compute the exponent vectors corresponding to every monomial in the
 % support of p.
 
-for i = 1:numel(p.coef(1,:))
-    temp(:,i) = grlext(p.nvar,p.coef(2,i),p.choose);
-end
-
 tab = ncktab(p.nvar+p.deg+d);  % Compute appropiate table for fast grlex igrlex use.
+
+for i = 1:numel(p.coef(1,:))
+    temp(:,i) = grlext(p.nvar,p.coef(2,i),tab);
+end
 
 % If y is sdpvar object.
 
