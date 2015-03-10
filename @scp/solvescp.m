@@ -54,6 +54,7 @@ for i = 1:numel(cp.obj)
         % Store solution.
         
         cp.sol{end}.reltype = cp.reltype;
+        cp.sol{end}.FW = cp.FW;
         cp.sol{end}.obj = cp.obj(i);
         
         cp.sol{end}.ycons = cp.ycons;

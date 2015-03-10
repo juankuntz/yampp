@@ -24,7 +24,7 @@ classdef seq
             
             if nargin >= 2
                 obj.ord = varargin{2};
-                obj.choose = ncktab(obj.dim+varargin{2});
+                obj.choose = ncktab(obj.dim+obj.ord);
             end
             
             if nargin == 3  % Convert vector of doubles into sequence object.

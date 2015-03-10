@@ -3,23 +3,22 @@ classdef scp < matlab.mixin.SetGet
     % Class definition for scp: meant to model moment problems (scp is 
     % short for "sequence conic program").
     
-    % Juan Kuntz, 16/02/2015, last edited 16/02/2015.
+    % Juan Kuntz, 16/02/2015, last edited 03/03/2015.
     
     properties 
         nvar = [];          % Dimension of underlying space.
-        var = [];           % Structure containing symbols and number of components, like for @pol.
         
         obj = [];           % Objective, or vector of objectives, to be specified via polynomials.
         minmax = [];        % Specifies whether the objective should be min(obj) or max(obj).
         
-        mass = [];          % The mass of the measure.
-        supcon = [];        % Ineqquality constraints on the support of the measure, array of polnomials.
-        seqeqcon = [];          % Linear equality constraints on sequence, array of sequences.
-        seqineqcon = [];        % Linear inequality constraints on sequence, array of sequences.
+        mass                % The mass of the measure.
+        supcon              % Ineqquality constraints on the support of the measure, array of polnomials.
+        seqeqcon         % Linear equality constraints on sequence, array of sequences.
+        seqineqcon        % Linear inequality constraints on sequence, array of sequences.
         
         reltype = [];   % Type of relaxation {D,DD,SDD,FKW,PSD}
         relorder = [];  % Order of relaxation
-        FW = [];        % Specifies the k of the FkW relaxation
+        FW = 0;        % Specifies the k of the FkW relaxation
         
         status = []; % Solved, unsolved, etc.
         
@@ -43,9 +42,11 @@ classdef scp < matlab.mixin.SetGet
         % Class constructor
         
         function obj = scp(varargin)
-            if nargin ~= 0
+            if nargin == 1 || nargin == 2
                 obj.nvar = varargin{1};
-                obj.relorder = varargin{2};
+                if nargin == 2
+                    obj.relorder = varargin{2};
+                end
             end
         end
         
