@@ -3,12 +3,26 @@ function [pnotq,qnotp] = varcomp(p,q)
 % Finds which variable symbols are part of p but not part of q, and stores
 % theses in pnotq (along with their number of components). Ditto for qnotp.
 
-% Juan Kuntz, 06/02/2015
+% Juan Kuntz, 06/02/2015, last edited 11/03/2015
 
 pnotq.symb = []; pnotq.ncomp = [];
 qnotp.symb = []; qnotp.ncomp = [];
 
 both = [];
+
+if isempty(p.var.symb) || isempty(q.var.symb) 
+    if isempty(p.var.symb) && isempty(q.var.symb) 
+        return
+    elseif isempty(p.var.symb)
+        qnotp.symb = q.var.symb;
+        qnotp.ncomp = q.var.ncomp;
+        return
+    else
+        pnotq.symb = p.var.symb;
+        pnotq.ncomp = p.var.ncomp;
+        return
+    end
+end
 
 for i = 1:numel(p.var.symb)
     for j = 1:numel(q.var.symb)
