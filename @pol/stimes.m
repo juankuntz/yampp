@@ -10,6 +10,8 @@ if isdouble(p)
     g = q; 
     if isempty(q.coef) % If q is the zero polynomial we are done.
         return
+    elseif p == 0
+        g.coef = [];
     else % Otherwise just multiply each coefficient of q by p.
         g.coef(1,:) = p*q.coef(1,:);
     end
