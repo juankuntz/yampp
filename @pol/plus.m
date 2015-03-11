@@ -3,7 +3,7 @@ function g = plus(p,q)
 % Computes the componentwise sum between two polynomials p and q of the
 % same dimensions.
 
-% Juan Kuntz, 08/02/2015
+% Juan Kuntz, 08/02/2015, last edited 11/03/2015
 
 [n,m] = size(p); 
 
@@ -11,16 +11,28 @@ if ~isequal([n,m],size(q))
     error('Both polynomials to be summed must have the same dimension as vectors ');
 end
 
+flg = 0;
 for i = 1:n
     for j = 1:m
-        g(i,j) = splus(p(i),q(i));
+        [g(i,j),temp] = splus(p(i),q(i));
+        flg = max(temp,flg);
     end
 end
+
+% Some monomials have cancelled out, hence we may have to clean.
+
+if flg
+    g = cleanpol(g); % Removes uneeded symbols and ensures that degree is what it should be.
+end
 end
 
-function g = splus(p,q)
+function [g,cleanflag] = splus(p,q)
 
-% Computes the sum of two scalars.
+% Computes the sum of two scalars. The cleanflag warns us that we should
+% run clean pol later since at least some monomial has been canceled out
+% and thus we may have removed some variables/lowered the degree.
+
+cleanflag = 0;
 
 % If p or q is a double.
 
@@ -46,7 +58,7 @@ if ~strcmp(p.var.symb,q.var.symb)
     if ~isempty(qnotp.symb)
         p.var = qnotp; 
     end
-    if ~isempty(pnotq)
+    if ~isempty(pnotq.symb)
         q.var = pnotq;
     end
 end
@@ -73,6 +85,7 @@ i = 1; j = 1; nc = numel(q.coef(1,:)); l = numel(g.coef(1,:));
 while i <= l
     if g.coef(2,i) == q.coef(2,j)
         if g.coef(1,i) + q.coef(1,j) == 0 % We do not store zero coeficients
+            cleanflag = 1;  % We may have to clean.
             g.coef(:,i) = [];
             l = l - 1;
         else

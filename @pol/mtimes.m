@@ -3,7 +3,7 @@ function g = mtimes(p,q)
 % Compute the matrix product of p and q (or the appropiate scalar product
 % at least one of them is scalar. 
 
-% Juan Kuntz, 08/02/2015, last edited 16/02/2015
+% Juan Kuntz, 08/02/2015, last edited 11/03/2015
 
 % Case 1: Inner product between sdpvar (or seq) object and a pol object.
 
@@ -59,7 +59,7 @@ elseif mp == nq % Matrix product
         end
     end
 else
-    disp(['Error: the number of columns of ',p,' must be the same as that of rows of ',q, ' in order for their matrix product to make sense, otherwise one of them must be a scalar to compute the scalar product'])
+    error(['Error: the number of columns of ',p,' must be the same as that of rows of ',q, ' in order for their matrix product to make sense, otherwise one of them must be a scalar to compute the scalar product']);
 end
 end
 

@@ -99,7 +99,7 @@ switch s.type
         % If q is a double convert it into a polynomial in the variables of
         % p.
         
-        if isa(q,'double')
+        if isa(q,'double') && ~isempty(q)
             temp = pol(q); 
             clear q;
             q = temp;
@@ -116,6 +116,16 @@ switch s.type
         % Now we can call the builtin subsasgn.
         
         out = builtin('subsasgn',p,s,q);    
+        
+        % If q is empty, we may have to update the list of variables, thus
+        % run cleanpol.
+        
+        if isempty(q)
+            clear temp;
+            temp = out; 
+            clear out;
+            out = cleanpol(temp);
+        end
     case '{}'
         out = builtin('subsasgn',p,s,q);
     case '.'
