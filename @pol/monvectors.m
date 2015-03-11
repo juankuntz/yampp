@@ -6,6 +6,11 @@ function out = monvectors(p)
 
 % Juan Kuntz, 11/03/2015.
 
+if isempty(p.coef)  % Zero polynomial
+    out = zeros(p(1,1).nvar);
+    return
+end
+            
 TAB = ncktab(p.nvar+p.deg);
 l = numel(p.coef(1,:));
 
