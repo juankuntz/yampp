@@ -8,10 +8,13 @@ function g = vertcat(varargin)
 
 % Juan Kuntz, 11/03/2015.
 
-k = 0;
+k = 0; DEG = 0;
 for i = 1:nargin
     if ~isempty(varargin{i})
         k = k + 1;
+        if isa(varargin{i},'double')
+            varargin{i} = pol(varargin{i});
+        end
         temp{k} = varargin{i}';
         DEG = max(DEG,temp{k}(1,1).deg);
     end
