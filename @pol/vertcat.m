@@ -13,6 +13,7 @@ for i = 1:nargin
     if ~isempty(varargin{i})
         k = k + 1;
         temp{k} = varargin{i}';
+        DEG = max(DEG,temp{k}(1,1).deg);
     end
 end
 
@@ -57,6 +58,14 @@ for i = 1:k
     g(:,sum(m(1:i-1))+1:sum(m(1:i))) = p; % Add in the next matrix.
     
     clear p gnotp pnotg
+end
+
+% Update the degrees.
+
+for i = 1:n(1)
+    for j = 1:sum(m)
+        g(i,j).deg = DEG;
+    end
 end
 
 TEMP = g; clear g; g = TEMP';

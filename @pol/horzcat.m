@@ -9,11 +9,12 @@ function g = horzcat(varargin)
 
 % Remove empty polynomials
 
-k = 0;
+k = 0; DEG = 0;
 for i = 1:nargin
     if ~isempty(varargin{i})
         k = k + 1;
         temp{k} = varargin{i};
+        DEG = max(DEG,temp{k}(1,1).deg);
     end
 end
 
@@ -31,7 +32,7 @@ end
 
 g(n(1),sum(m)) = pol;
 
-% Populate g
+% Populate g and set the correct variables.
 
 for i = 1:k
     
@@ -59,4 +60,13 @@ for i = 1:k
     
     clear p gnotp pnotg
 end
+
+% Update the degrees.
+
+for i = 1:n(1)
+    for j = 1:sum(m)
+        g(i,j).deg = DEG;
+    end
+end
+    
 end
