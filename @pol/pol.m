@@ -20,11 +20,31 @@ classdef pol
              
             % Constructor method: can be used to declare either zero
             % polynomials, if no argument is specified, or constant
-            % polynomials if an argument is specified
+            % matrices of constant polynomials if a single matrix of
+            % doubles is specified. Eg, pol([1,2]) returns a 1 x 2 vector
+            % containing the polynomial 1 in its first entry, and 2 in its
+            % second entry. 
 
             if nargin > 1 || (nargin == 1 && ~isdouble(varargin{1}))
-                error('The constructor method of pol objects either takes in no arguments, in which case it returns the zero polynomial, or it takes a single double that is used to declare the constant polynomial with that double as its coefficient');
+                error('The constructor method of pol objects either takes in no arguments, in which case it returns the zero polynomial, or it takes a matrix of doubles that is used to declare the corresponding matrix of constant polynomials');
             end
+            
+            if nargin ~= 0
+                
+            [n,m] = size(varargin{1});
+            
+                if max([n,m])>1
+                    for i = 1:n
+                        for j = 1:m
+                            obj(i,j) = pol(varargin{1}(i,j));
+                        end
+                    end
+                    return
+                end
+            end
+            
+            % If we've made it to here, we're now either in the 0
+            % polynomial or the scalar constant polynomial case.
             
             obj.deg = 0;
             obj.nvar = 0;
@@ -32,10 +52,16 @@ classdef pol
             temp.ncomp = [];
             obj.var = temp;
             clear temp
-            if nargin == 1  % Zero polynomial is identified with the one that has empty coef array.
-                obj.coef = [varargin{1};1];
+                
+            % Zero polynomial is identified with the one that has empty
+            % coef array, in which case we are done.
+            
+            if nargin == 0 
+                return                
             end
 
+            obj.coef = [varargin{1};1];
+            
             end
         
             function obj = set.var(obj,new)
