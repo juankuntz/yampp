@@ -3,7 +3,7 @@ function g = plus(p,q)
 % Computes the componentwise sum between two polynomials p and q of the
 % same dimensions.
 
-% Juan Kuntz, 08/02/2015, last edited 11/03/2015
+% Juan Kuntz, 08/02/2015, last edited 12/03/2015
 
 [n,m] = size(p); 
 
@@ -14,7 +14,7 @@ end
 flg = 0;
 for i = 1:n
     for j = 1:m
-        [g(i,j),temp] = splus(p(i),q(i));
+        [g(i,j),temp] = splus(p(i,j),q(i,j));
         flg = max(temp,flg);
     end
 end

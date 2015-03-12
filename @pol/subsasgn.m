@@ -24,7 +24,11 @@ function out = subsasgn(p,s,q)
 % u(1,1).var.symb = 'x'
 % u(1,1).var.ncomp = 3
 %
-% Juan Kuntz, 11/03/2015.
+% Juan Kuntz, 11/03/2015, last edited 12/03/2015.
+
+% Remeber: Inside the methods of a class, the short hands for subsref and
+% subasgn always call the build in subsref and subsasgn, see documentation.
+% To call this one we need to use the explicit call subsasgn(A,s,B).
 
 switch s.type
     
@@ -126,8 +130,8 @@ switch s.type
             out = cleanpol(temp);
         end
     case '{}'
-        out = builtin('subsasgn',p,s,q);
+        % Not implemented.
     case '.'
-        out = builtin('subsasgn',p,s,q);
+        % Not implemented.
 end
 end
