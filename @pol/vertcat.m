@@ -6,7 +6,9 @@ function g = vertcat(varargin)
 % and those of q. This is essentially just a copy of the code for horzcat,
 % with a couple of tranposes.
 
-% Juan Kuntz, 11/03/2015.
+% Juan Kuntz, 11/03/2015, last edited 12/03/2015
+
+% Remove empty polynomials and compute new degree.
 
 k = 0; DEG = 0;
 for i = 1:nargin
@@ -26,13 +28,13 @@ end
 
 for i = 2:k
     if n(i-1) ~= n(i)
-        error('To concatenate two matrices of polynomials horizontally, each matrix must have the same number of rows');
+        error('To concatenate two matrices of polynomials vertically, each matrix must have the same number of columns.');
     end
 end
 
 % Initialise g and adding the variables of temp{1} into it.
 
-g(n(1),sum(m)) = pol;
+g(n(1),sum(m)) = temp{1}(1,1); g(n(1),sum(m)).coef = [];
 
 % Populate g
 
@@ -50,6 +52,7 @@ for i = 1:k
                     g(j,k).var = pnotg; 
                 end
             end
+            
             for k = 1:m(i)
                 if ~isempty(gnotp.symb)
                     p(j,k).var = gnotp;

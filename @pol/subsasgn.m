@@ -81,7 +81,7 @@ switch s.type
             
             n = s.subs{1};
             m = 1;
-            if exist('s.subs{2}')
+            if numel(s.subs) > 1
                 m = s.subs{2};
             end
             
