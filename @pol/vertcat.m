@@ -32,13 +32,9 @@ for i = 2:k
     end
 end
 
-% Initialise g and adding the variables of temp{1} into it. For some
-% reason, the short hand call to subsasgn does not call @pol/subsasgn.m, so
-% we have to spell it out.
+% Initialise g.
 
-s.subs{1} = n(1); s.subs{2} = sum(m); s.type = '()'; 
-g = subsasgn([],s,temp{1}(1,1));
-g(n(1),sum(m)).coef = []; % Make it the matrix of zeros.
+g(n(1),sum(m)) = pol;
 
 % Populate g  and set the correct variables.
 
@@ -50,15 +46,17 @@ for i = 1:k
     
     if ~strcmp(g(1,1).var.symb,p(1,1).var.symb)
         [gnotp,pnotg] = varcomp(g(1,1),p(1,1));  
-        for j = 1:n(1)
-            for k = 1:sum(m)
-                if ~isempty(pnotg.symb)
+        if ~isempty(pnotg.symb)
+            for j = 1:n(1)
+                for k = 1:sum(m)
                     g(j,k).var = pnotg; 
                 end
             end
-            
-            for k = 1:m(i)
-                if ~isempty(gnotp.symb)
+        end
+        
+        if ~isempty(gnotp.symb)
+            for j = 1:n(1)
+                for k = 1:m(i)
                     p(j,k).var = gnotp;
                 end
             end

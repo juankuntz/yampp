@@ -69,7 +69,7 @@ classdef pol
                 % The set method for var is used to add extra variables. It
                 % is not possible to remove or replace variables.
                
-                if isempty(obj.var) % If there are no variables already, then the variables are just the new ones.
+                if isempty(obj.var) || isempty(obj.var.symb) % If there are no variables already, then the variables are just the new ones.
                     [obj.var.symb,I] = sort(new.symb); % Order the variables alphabetically.
                     obj.var.ncomp = new.ncomp(I);
                     return

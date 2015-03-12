@@ -48,7 +48,6 @@ switch s.type
                 end
             end
             
-            
             if ~isempty(qnotp.symb)
                 for i = 1:numel(p(:,1))
                     for j = 1:numel(p(1,:))
