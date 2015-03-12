@@ -12,6 +12,15 @@ function mkscp(cp)
 
 n = cp.nvar; d = cp.relorder;
 
+% Check that the degree of no polynomial in the problem's description
+% exceeds (2-times) the relaxation order. 
+
+% THIS NEEDS FIXING
+
+if 2*d < prop(cp.supcon(1),'d')
+    error('The degree of one of the polynomial defining the support is bigger than the order of the moments included in the moment problem, increase the relaxation order of the problem.'); 
+end
+
 % Clear any previous yalmip constraints.
 
 cp.ycons = []; cp.A = []; cp.b = []; cp.F = []; cp.f = []; % LATER MAKE OPTION THAT SKIPS RE-WRITING b F and f if we are just switching type of constraints.
@@ -110,11 +119,6 @@ cp.A{1} = -T';
 
 for i = 1:numel(cp.supcon)
     
-    if 2*d < cp.supcon(i).deg
-        disp(['Error: the degree of the ',num2str(i),'"s polynomial defining the support is too big']); % fix this.
-        return
-    end
-    
     l(1) = nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2));
     l(2) = nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2));
     
@@ -177,11 +181,6 @@ cp.A{1} = -T';
 
 for i = 1:numel(cp.supcon)
     
-    if 2*d < cp.supcon(i).deg
-        disp(['Error: the degree of the ',num2str(i),'"s polynomial defining the support is too big']); % fix this.
-        return
-    end
-    
     l(1) = nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2));
     l(2) = nchoosek(n+d,d);
     l(3) = 0;
@@ -207,7 +206,6 @@ for i = 1:numel(cp.supcon)
     clear temp Tq l C
 end
 
-
 end
 
 function sdd(cp) % SDD constraints.
@@ -215,7 +213,7 @@ function sdd(cp) % SDD constraints.
 % Declare shorthands.
 
 n = cp.nvar; d = cp.relorder;
-y = cp.yvar; l2d = nchoosek(n+2*d,2*d);
+y = cp.yvar; l2d = nchoosek(n+2*d,2*d); ld = nchoosek(n+d,d);
 
 tab = ncktab(n+2*d);
 
@@ -229,63 +227,64 @@ for i = 1:nchoosek(n+d,d)
     r(i) = igrlext(2*mon(:,i),tab);
 end
 
-l = 1;
+
+l = 0; Ay = []; Tt{(ld+1)*ld/2-ld} = [];
 for i = 1:nchoosek(n+d,d)
     for j = 1:i-1
+        l = l + 1;
         
         k = igrlext(mon(:,i)+mon(:,j),tab);
-        cp.ycons = [cp.ycons,cone([2*y(k);y(r(i))-y(r(j))],y(r(i))+y(r(j)))];
+        %cp.ycons = [cp.ycons,cone([2*y(k);y(r(i))-y(r(j))],y(r(i))+y(r(j)))];
         
         T = zeros(3,l2d);
         T(1,r(i)) = 1; T(1,r(j)) = 1;
         T(2,k) = 2;
         T(3,r(i)) = 1; T(3,r(j)) = -1;
         
+        %Tbig = [Tbig,T];
+        Ay = [Ay,T*y];
         Tt{l} = -T';
-        
-        l = l + 1;
     end
 end
 
+cp.ycons = [cp.ycons,cone(Ay)];
+
 cp.A{1} = Tt;  
 
-clear T Tt
+clear T Tt Ay
 
 % Localising matrices constraints.
-
+    
 for i = 1:numel(cp.supcon)
     
-    if 2*d < cp.supcon(i).deg
-        disp(['Error: the degree of the ',num2str(i),'"s polynomial defining the support is too big']); % fix this.
-        return
-    end
-    
-    l2dn = nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2));
+    dc = deg(cp.supcon(i));
+    l2dn = nchoosek(n+2*floor(d-dc/2),2*floor(d-dc/2));
     
     [temp2,Tq2] = shift(cp.supcon(i),y);   % Shift the sequence by the support polynomial.
     temp = temp2(1:l2dn);
     Tq = Tq2(1:l2dn,:);
     
-    l = 1;
-    for j = 1:nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2))
+    l = 1; Ay = [];
+    for j = 1:nchoosek(n+floor(d-dc/2),floor(d-dc/2))
         for k = 1:j-1
 
             I = igrlext(mon(:,j)+mon(:,k),tab);
-            cp.ycons = [cp.ycons,cone([2*temp(I);temp(r(j))-temp(r(k))],temp(r(j))+temp(r(k)))];
-
+            
             T = zeros(3,l2dn);
             T(1,r(j)) = 1; T(1,r(k)) = 1;
             T(2,I) = 2;
             T(3,r(j)) = 1; T(3,r(k)) = -1;
             
+            Ay = [Ay,T*temp];
             Tt{l} = -Tq'*T';
             
             l = l + 1;
         end
     end
-
+    
+    cp.ycons = [cp.ycons,cone(Ay)];
     cp.A{end+1} = Tt;  
-    clear T Tt
+    clear T Tt Ay temp dc
 end
 
 end
@@ -331,11 +330,6 @@ clear l I Ay X Y
 % Localising matrices constraints.
 
 for i = 1:numel(cp.supcon)
-    
-    if 2*d < cp.supcon(i).deg
-        disp(['Error: the degree of the ',num2str(i),'"s polynomial defining the support is too big']); % fix this.
-        return
-    end
     
     % Construct localising matrix.
     
@@ -396,12 +390,11 @@ clear B; clear Ay;
 
 % Localising matrices constraints.
 
+if 2*d < prop(cp.supcon(1),'d')
+    error('The degree of one of the polynomial defining the support is bigger than the order of the moments included in the moment problem, increase the relaxation order of the problem.'); 
+end
+
 for i = 1:numel(cp.supcon)
-    
-    if 2*d < cp.supcon(i).deg
-        disp(['Error: the degree of the ',num2str(i),'"s polynomial defining the support is too big']); % fix this.
-        return
-    end
     
     % Construct localising matrix.
     

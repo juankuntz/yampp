@@ -4,7 +4,7 @@ function out = grlext(varargin)
 % rankend rank in the graded lexicographic order of monomials in n
 % variables.
 
-% Juan Kuntz 05/02/2015
+% Juan Kuntz, 05/02/2015
 
 n = varargin{1}; rank = varargin{2};
 
