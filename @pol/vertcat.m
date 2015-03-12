@@ -32,11 +32,15 @@ for i = 2:k
     end
 end
 
-% Initialise g and adding the variables of temp{1} into it.
+% Initialise g and adding the variables of temp{1} into it. For some
+% reason, the short hand call to subsasgn does not call @pol/subsasgn.m, so
+% we have to spell it out.
 
-g(n(1),sum(m)) = temp{1}(1,1); g(n(1),sum(m)).coef = [];
+s.subs{1} = n(1); s.subs{2} = sum(m); s.type = '()'; 
+g = subsasgn([],s,temp{1}(1,1));
+g(n(1),sum(m)).coef = []; % Make it the matrix of zeros.
 
-% Populate g
+% Populate g  and set the correct variables.
 
 for i = 1:k
     
