@@ -68,8 +68,7 @@ function dp = sdiff(p,x)
 % differentiate, just try it out.
 
 if isdouble(p) % If p is a double return the zero polynomial.
-    dp = x;
-    dp.coef = [];
+    dp = pol;
     return
 end
 

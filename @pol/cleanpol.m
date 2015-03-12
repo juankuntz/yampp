@@ -11,7 +11,7 @@ function g = cleanpol(p)
 % It also updates the degree in the case that the highest degree monomials
 % have been deleted.
 
-% Juan Kuntz, 11/03/2005.
+% Juan Kuntz, 11/03/2005, last edited 12/03/2005.
 
 % First decide which symbols are actually present in the polynomial, the
 % ith symbol is present if and only if v(i)=1.
@@ -22,7 +22,7 @@ DEG = 0;
 for i = 1:n
     for j = 1:m
         mon{i,j} = monvectors(p(i,j));
-        DEG = max([DEG,sum(mon{i,j})]);
+        DEG = max([DEG,sum(mon{i,j}(:,end))]);
     end
 end
 
@@ -31,7 +31,9 @@ end
 V = [];
 for i = 1:n
     for j = 1:m
-        V = [V,whichvar(p(i,j),mon{i,j})];
+        if ~isempty(mon{i,j})
+            V = [V,whichvar(p(i,j),mon{i,j})];
+        end
     end
 end
 
