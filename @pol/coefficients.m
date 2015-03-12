@@ -11,7 +11,7 @@ function out = coefficients(varargin)
 % equal than p.deg). If s is 'sparse' we return two arrays, the first
 % containing the coefficients, the second the respective ranks in grlex.
 
-% Juan Kuntz, 17/02/2015, last edited 04/03/2015
+% Juan Kuntz, 17/02/2015, last edited 12/03/2015
 
 p = varargin{1};
 
@@ -23,8 +23,9 @@ end
 
 switch s
     case 'full'
-
-        N = nchoosek(p.nvar+p.deg,p.deg);
+        
+        DEG = sum(grlext(p.nvar,p.coef(2,end),ncktab(p.nvar+p.deg)));
+        N = nchoosek(p.nvar+DEG,DEG);
         J = numel(p.coef(1,:));
 
         j = 1;
