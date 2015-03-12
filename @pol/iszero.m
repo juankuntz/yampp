@@ -3,14 +3,18 @@ function out = iszero(p)
 % Tests whether or not p is the zero polynomial, if it is iszero.m returns
 % 1 otherwise 0.
 
-% To do: overload so that it accepts matrix inputs.
+% Juan Kuntz, 16/02/2015, last edited 13/03/2015.
 
-% Juan Kuntz, 16/02/2015, last edited 16/02/2015.
+[n,m] = size(p);
 
-out = 0;
+out = zeros([n,m]);
 
-if isempty(p.coef) || sum(p.coef(1,:)) == 0
-   out = 1; 
+for i = 1:n
+    for j = 1:m
+        if isempty(p.coef) 
+           out(i,j) = 1; 
+        end
+    end
 end
 
 end
