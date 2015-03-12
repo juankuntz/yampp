@@ -2,18 +2,16 @@ function g = stimes(p,q)
 
 % Computes the product of two scalars p and q.
 
-% Juan Kuntz, 08/02/2015, last edited: 16/02/2015
+% Juan Kuntz, 08/02/2015, last edited: 12/03/2015
 
 % If either p or q are real numbers the product is easy.
 
 if isdouble(p)
-    g = q; 
-    if isempty(q.coef) % If q is the zero polynomial we are done.
-        return
-    elseif p == 0
+    g = q;
+    if isempty(q.coef) || p == 0  % If q is the zero polynomial or p is zero, return g = zero.
         g.coef = [];
-    else % Otherwise just multiply each coefficient of q by p.
-        g.coef(1,:) = p*q.coef(1,:);
+    else
+        g.coef(1,:) = p*q.coef(1,:); % Otherwise just multiply each coefficient of q by p.
     end
     return
 end

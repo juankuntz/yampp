@@ -72,6 +72,7 @@ classdef pol
                
                 if isempty(obj.var) || isempty(obj.var.symb) % If there are no variables already, then the variables obj are just the new ones.
                     obj.var = new;
+                    obj = updatenvar(obj,sum(obj.var.ncomp)); % Update nvar property.
                     return
                 end
                 
@@ -90,7 +91,7 @@ classdef pol
                 obj.var.ncomp = tempncomp(I);
                 clear tempncomp tempsymb
                 
-                obj = updatenvar(obj,sum(obj.var.ncomp)); % Update nvar property, also store old choose table for next step.
+                obj = updatenvar(obj,sum(obj.var.ncomp)); % Update nvar property.
                 
                 obj = updatecoef(obj,nvarsold,nsymbnew,oldsymb); % Rewrite coefficients in new ranking.
             end

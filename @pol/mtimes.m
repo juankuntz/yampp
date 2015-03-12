@@ -3,7 +3,7 @@ function g = mtimes(p,q)
 % Compute the matrix product of p and q (or the appropiate scalar product
 % at least one of them is scalar. 
 
-% Juan Kuntz, 08/02/2015, last edited 11/03/2015
+% Juan Kuntz, 08/02/2015, last edited 12/03/2015
 
 % Case 1: Inner product between sdpvar (or seq) object and a pol object.
 
@@ -37,6 +37,23 @@ end
 
 [np,mp] = size(p); [nq,mq] = size(q);
 
+% If we are multiplying by zeros we have to clean later in case we've
+% removed some symbol or lowered the degree.
+
+cflg = 0;
+if isa(p,'double')
+    cflg = max(cflg,any(any(p==0)));
+    cflg = max(cflg,any(any(iszero(q))));
+elseif isa(q,'double')
+    cflg = max(cflg,any(any(q==0)));
+    cflg = max(cflg,any(any(iszero(p))));
+else
+    cflg = max(cflg,any(any(iszero(q))));
+    cflg = max(cflg,any(any(iszero(p))));
+end
+  
+% Now compute product.
+    
 if np == 1 && mp == 1 % Scalar product
     for i = 1:nq
         for j = 1:mq
@@ -59,7 +76,11 @@ elseif mp == nq % Matrix product
         end
     end
 else
-    error(['Error: the number of columns of ',p,' must be the same as that of rows of ',q, ' in order for their matrix product to make sense, otherwise one of them must be a scalar to compute the scalar product']);
+    error(['The number of columns of ',p,' must be the same as that of rows of ',q, ' in order for their matrix product to make sense, otherwise one of them must be a scalar to compute the scalar product']);
+end
+
+if cflg
+    g = cleanpol(g);
 end
 end
 

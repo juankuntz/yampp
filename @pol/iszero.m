@@ -11,7 +11,7 @@ out = zeros([n,m]);
 
 for i = 1:n
     for j = 1:m
-        if isempty(p.coef) 
+        if isempty(p(i,j).coef) 
            out(i,j) = 1; 
         end
     end

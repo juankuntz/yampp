@@ -22,7 +22,9 @@ DEG = 0;
 for i = 1:n
     for j = 1:m
         mon{i,j} = monvectors(p(i,j));
-        DEG = max([DEG,sum(mon{i,j}(:,end))]);
+        if ~isempty(mon{i,j})
+            DEG = max([DEG,sum(mon{i,j}(:,end))]);
+        end
     end
 end
 
