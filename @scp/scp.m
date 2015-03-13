@@ -13,7 +13,8 @@ classdef scp < matlab.mixin.SetGet
         % equalities and inequalities describing the support of the
         % measure.
         
-        obj = {[],[]};           % Contains the description of the objective/s.
+        nvar = [];          % Dimension of underlying space.
+        obj = {[],[]};      % Contains the description of the objective/s.
         
         mass = [];          % The mass of the measure. 
         
@@ -25,11 +26,19 @@ classdef scp < matlab.mixin.SetGet
         
         % Properties describing the relaxations to be solved.
         
-        rtyp = [];   % Type of relaxation {D,DD,SDD,FKW,PSD}
-        rord = [];  % Order of relaxation
+        rtyp = [];      % Type of relaxation {D,DD,SDD,{FKW,k},PSD}.
+        rord = [];      % Order of relaxation.
+        rlst = [];      % Contains the list of relaxations, used in combination with mkscp by solvescp to build the relaxations.
+        rels = [];      % Contains the relaxations.
+        
+        
+        % Solver options
+        
+        ops = []; % Solver options.
+        parallelise = 0; % Parallelise option.
         
         sol = []; % A cell array, each entry of which contains the info on some solution.
-        ops = []; % Solver options.
+
         
         yvar = []; % Stores the yalmip variables.
         ycons = []; % Stores the above constraints translated into yalmip constraints.
@@ -117,8 +126,8 @@ classdef scp < matlab.mixin.SetGet
                 
                 % If everything is fine, store the constraints.
                 
-                cp.obj{1} = [cp.obj{1};f(:)];
-                cp.obj{2} = [cp.obj{2};c];
+                cp.obj{1} = [cp.obj{1};c];
+                cp.obj{2} = [cp.obj{2};f(:)];
                 
             catch % If data has been specified poorly, return error message.
                 error('The objective must be specified by a cell C containing two objects, a matrix chars c = C{1} and vector, with its length being the number of rows of c, of pols p = C{2}. Each row of c must contain either inf or sup. This adds the objectives c(i,:) p(i) (elementwise) to the program.');
@@ -149,9 +158,12 @@ classdef scp < matlab.mixin.SetGet
             try 
                 % Declare shorthands.
                 
-                if numel(data) == 1
+                if isa(data,'pol')
+                    p = data;
+                    c = zeros(size(p));
+                elseif numel(data) == 1 
                     p = data{1};
-                    c = 0;
+                    c = zeros(size(p));
                 else
                     p = data{1};
                     c = data{2};
@@ -159,7 +171,7 @@ classdef scp < matlab.mixin.SetGet
                 
                 % Check that data is of the correct format.
                 
-                if ~isa(p,'pol') || ~isa(c,'double') || ~isequal(size(p),size(c)) || numel(data) > 2
+                if ~isa(p,'pol') || ~isa(c,'double') || ~isequal(size(p),size(c)) || (~isa(data,'pol') && numel(data) > 2)
                     error;
                 end
                 
@@ -181,7 +193,10 @@ classdef scp < matlab.mixin.SetGet
             try 
                 % Declare shorthands.
                 
-                if numel(data) == 1
+                if isa(data,'pol')
+                    p = data;
+                    c = zeros(size(p));
+                elseif numel(data) == 1
                     p = data{1};
                     c = 0;
                 else
@@ -191,7 +206,7 @@ classdef scp < matlab.mixin.SetGet
                 
                 % Check that data is of the correct format.
                 
-                if ~isa(p,'pol') || ~isa(c,'double') || ~isequal(size(p),size(c)) || numel(data) > 2
+                if ~isa(p,'pol') || ~isa(c,'double') || ~isequal(size(p),size(c)) || (~isa(data,'pol') && numel(data) > 2)
                     error;
                 end
                 
