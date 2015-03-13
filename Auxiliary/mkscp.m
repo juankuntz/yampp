@@ -1,4 +1,4 @@
-function mkscp(cp)
+function rel = mkscp(cp)
 
 % Construct the appropiate moment problem.
 
@@ -6,50 +6,62 @@ function mkscp(cp)
 % THE USER IS NOT UNDER THE IMPRESIONS THAT ALL SOLUTIONS CORRESPOND TO THE
 % SAME DATA).
 
-% Juan Kuntz, 13/02/2015, last edited 17/02/2015.
+% Juan Kuntz, 13/02/2015, last edited 13/03/2015.
 
 % Declare shorthands.
 
 n = cp.nvar; d = cp.relorder;
 
+% Load problem info into rel, avoid this in the future.
+
+rel.nvar = n; rel.relorder = d;
+rel.seqeqcon = cp.seqeqcon;
+rel.supcon = cp.supcon;
+rel.minmax = cp.minmax;
+rel.ops = cp.ops;
+rel.reltype = cp.reltype;
+rel.FW = cp.FW;
+rel.obj = cp.obj;
+rel.mass = cp.mass;
+rel.dualres = 0;
 % Check that the degree of no polynomial in the problem's description
 % exceeds (2-times) the relaxation order. 
 
 % THIS NEEDS FIXING
 
-if 2*d < prop(cp.supcon(1),'d')
+if (~isempty(cp.supcon) && 2*d < prop(cp.supcon(1),'d')) || (~isempty(cp.seqeqcon) && 2*d < prop(cp.seqeqcon(1),'d')) || (~isempty(cp.ineqcon) && 2*d < prop(cp.ineqcon(1),'d')) || (~isempty(cp.obj) && 2*d < prop(cp.obj,'d')) 
     error('The degree of one of the polynomial defining the support is bigger than the order of the moments included in the moment problem, increase the relaxation order of the problem.'); 
 end
 
 % Clear any previous yalmip constraints.
 
-cp.ycons = []; cp.A = []; cp.b = []; cp.F = []; cp.f = []; % LATER MAKE OPTION THAT SKIPS RE-WRITING b F and f if we are just switching type of constraints.
+rel.ycons = []; rel.A = []; rel.b = []; rel.F = []; rel.f = []; % LATER MAKE OPTION THAT SKIPS RE-WRITING b F and f if we are just switching type of constraints.
 
 % Initialise yalmip variables.
 
-cp.yvar = [];
-cp.yvar = sdpvar(nchoosek(n+2*d,2*d),1); 
+rel.yvar = [];
+rel.yvar = sdpvar(nchoosek(n+2*d,2*d),1); 
 
-y = cp.yvar;
+y = rel.yvar;
 
 % Add mass constraints
 
 if ~isempty(cp.mass)
-    cp.ycons = [cp.ycons,y(1) == cp.mass];
-    cp.F = [1,zeros(1,nchoosek(n+2*d,2*d)-1)];   % Required later to compute dual residues.
-    cp.f = 1;
+    rel.ycons = [rel.ycons,y(1) == cp.mass];
+    rel.F = [1,zeros(1,nchoosek(n+2*d,2*d)-1)];   % Required later to compute dual residues.
+    rel.f = 1;
 end
 
 % Add equality constraints.
 
 for i = 1:numel(cp.seqeqcon)
     temp = coefficients(cp.seqeqcon(i))';
-    cp.F = [cp.F; [temp,zeros(1,nchoosek(n+2*d,2*d)-numel(temp))]]; % Required later to compute dual residues.
+    rel.F = [rel.F; [temp,zeros(1,nchoosek(n+2*d,2*d)-numel(temp))]]; % Required later to compute dual residues.
     clear temp
-    cp.f = [cp.f;0];
+    rel.f = [rel.f;0];
 end
 
-cp.ycons = [cp.ycons,cp.F(2:end,:)*y == 0];
+rel.ycons = [rel.ycons,rel.F(2:end,:)*y == 0];
 
 % Add (linear) inequality constraints NOT IMPLEMENTED: CAREFUL WHEN
 % IMPLEMENTING, IT AFFECTS SOME INDEXING IN SOLVESCP.M. FOR EXAMPLE IN
@@ -66,36 +78,36 @@ cp.ycons = [cp.ycons,cp.F(2:end,:)*y == 0];
 
 % Add objective
 
-cp.yobj = [];
+rel.yobj = [];
 
-for i = 1:numel(cp.obj)
-    cp.yobj = [cp.yobj,cp.obj(i)*y];
-    
-    % Store for use later retrieving the dual residuals.
-    
-    temp = coefficients(cp.obj(i));
-    cp.b{i} = [temp;zeros(nchoosek(n+2*d,2*d)-numel(temp),1)];
-    clear temp
-end
+
+rel.yobj = cp.obj*y;
+
+% Store for use later retrieving the dual residuals.
+
+temp = coefficients(cp.obj);
+rel.b = [temp;zeros(nchoosek(n+2*d,2*d)-numel(temp),1)];
+clear temp
+
 
 % Add moment constraints.
 
 switch cp.reltype
     case 'D'
-        di(cp);
+        rel = di(rel);
     case 'DD'
-        dd(cp);
+        rel = dd(rel);
     case 'SDD'
-        sdd(cp);
+        rel = sdd(rel);
     case 'FWK'
-        fwk(cp);
+        rel = fwk(rel);
     case 'PSD'
-        psd(cp);
+        rel = psd(rel);
 end
 
 end
 
-function di(cp) % D constraints.
+function cp = di(cp) % D constraints.
 
 % Declare shorthands.
 
@@ -119,8 +131,9 @@ cp.A{1} = -T';
 
 for i = 1:numel(cp.supcon)
     
-    l(1) = nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2));
-    l(2) = nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2));
+    dc = deg(cp.supcon(i));
+    l(1) = nchoosek(n+floor(d-dc/2),floor(d-dc/2));
+    l(2) = nchoosek(n+2*floor(d-dc/2),2*floor(d-dc/2));
     
     [temp2,Tq2] = shift(cp.supcon(i),y);   % Shift the sequence by the support polynomial.
     temp = temp2(1:l(2)); 
@@ -131,12 +144,12 @@ for i = 1:numel(cp.supcon)
     cp.ycons = [cp.ycons,T(1:l(1),1:l(2))*temp >= 0];
     cp.A{end+1} = -(T(1:l(1),1:l(2))*Tq)';
     
-    clear temp Tq l
+    clear temp Tq l dc
 end
 
 end
 
-function dd(cp) % DD constraints.
+function cp = dd(cp) % DD constraints.
 
 % Declare shorthands.
 
@@ -181,13 +194,14 @@ cp.A{1} = -T';
 
 for i = 1:numel(cp.supcon)
     
-    l(1) = nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2));
+    dc = deg(cp.supcon(i));
+    l(1) = nchoosek(n+floor(d-dc/2),floor(d-dc/2));
     l(2) = nchoosek(n+d,d);
     l(3) = 0;
     for j = 1:l(1)
         l(3) = l(3) + 2*(j-1);
     end
-    l(4) = nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2));
+    l(4) = nchoosek(n+2*floor(d-dc/2),2*floor(d-dc/2));
     
     
     [temp2,Tq2] = shift(cp.supcon(i),y);   % Shift the sequence by the support polynomial.
@@ -203,12 +217,12 @@ for i = 1:numel(cp.supcon)
     
     cp.A{end+1} = -(C*Tq)';
     
-    clear temp Tq l C
+    clear temp Tq l C dc
 end
 
 end
 
-function sdd(cp) % SDD constraints.
+function cp = sdd(cp) % SDD constraints.
 
 % Declare shorthands.
 
@@ -289,7 +303,7 @@ end
 
 end
 
-function fwk(cp)
+function cp = fwk(cp)
 
 % Declare shorthands.
 
@@ -333,18 +347,19 @@ for i = 1:numel(cp.supcon)
     
     % Construct localising matrix.
     
-    B = hankelbasis(n,floor(d-cp.supcon(i).deg/2));
+    dc = deg(cp.supcon(i));
+    B = hankelbasis(n,floor(d-dc/2));
     [temp,T] = shift(cp.supcon(i),y);   % Shift the sequence by the support polynomial.
     
     % Back to constructing the localising matrix.
     
     Ay = zeros(size(B{1}));    
     
-    for j = 1:nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2))
+    for j = 1:nchoosek(n+2*floor(d-dc/2),2*floor(d-dc/2))
         Ay = Ay - (-B{j})*temp(j);
     end
 
-    l = nchoosek(n+floor(d-cp.supcon(i).deg/2),floor(d-cp.supcon(i).deg/2));
+    l = nchoosek(n+floor(d-dc/2),floor(d-dc/2));
     I = nchoosek(1:l,FW);
 
     if l < FW
@@ -354,13 +369,13 @@ for i = 1:numel(cp.supcon)
             cp.ycons = [cp.ycons,Ay(I(j,:),I(j,:)) >= 0];
         end
     end
-    clear temp Ay l I
+    clear temp Ay l I dc
 end
 
 
 end
 
-function psd(cp) % PSD constraints.
+function cp = psd(cp) % PSD constraints.
 
 % Declare shorthands.
 
@@ -390,15 +405,12 @@ clear B; clear Ay;
 
 % Localising matrices constraints.
 
-if 2*d < prop(cp.supcon(1),'d')
-    error('The degree of one of the polynomial defining the support is bigger than the order of the moments included in the moment problem, increase the relaxation order of the problem.'); 
-end
-
 for i = 1:numel(cp.supcon)
     
     % Construct localising matrix.
     
-    B = hankelbasis(n,floor(d-cp.supcon(i).deg/2));
+    dc = deg(cp.supcon(i));
+    B = hankelbasis(n,floor(d-dc/2));
     [temp,T] = shift(cp.supcon(i),y);   % Shift the sequence by the support polynomial.
     
     % We need the follwing when we recover the dual residues later.
@@ -418,13 +430,13 @@ for i = 1:numel(cp.supcon)
     
     Ay = zeros(size(B{1}));    
     
-    for j = 1:nchoosek(n+2*floor(d-cp.supcon(i).deg/2),2*floor(d-cp.supcon(i).deg/2))
+    for j = 1:nchoosek(n+2*floor(d-dc/2),2*floor(d-dc/2))
         Ay = Ay - (-B{j})*temp(j);
     end
     
     cp.ycons = [cp.ycons,Ay >= 0]; % Add localising matrix constraint.
     
-    clear temp Ay
+    clear temp Ay dc
 end
 
 end

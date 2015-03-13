@@ -11,17 +11,25 @@ objs = cp.obj{1}; objf = cp.obj{2};
 
 d = cp.rord; typ = cp.rtyp;
 
-
 out = [];
 for i = 1:numel(typ)
     for j = 1:numel(d)
         for k = 1:numel(objf)
             
             out{end+1}.nvar =  cp.nvar;
-            out{end}.relord =  d(j);
+            out{end}.mass = cp.mass;
+            out{end}.seqeqcon = cp.eqcon{1};
+            out{end}.ineqcon = cp.ineqcon{1};
+            out{end}.supcon = cp.supineq;
+            out{end}.ops = cp.ops;
+            %out. = cp.supeqcon;
+            
+            
+            out{end}.relorder =  d(j);
             out{end}.obj = objf(k);
             out{end}.minmax = objs(k,:);
             
+            out{end}.FW = [];
             if ischar(typ{i}) == 1
                 out{end}.reltype = typ{i};
             else

@@ -10,4 +10,3 @@ p = cp.obj{2}(1);
 cp.nvar = prop(p,'n');
 
 end
-
