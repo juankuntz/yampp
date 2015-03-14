@@ -42,7 +42,7 @@ ncoef = numel(p.coef(1,:));
 % If p and q do not have the same number of non-zero coefficients, then
 % they are not equal.
 
-if ncoef ~= numel(q.coef);
+if ncoef ~= numel(q.coef(1,:));
     out = 0;
     return
 end
@@ -51,7 +51,7 @@ end
 % monomials, then they are not the same.
 
 for i = 1:ncoef
-    if p.coef(i,1) ~= q.coef(i,1) || p.coef(i,2) ~= q.coef(i,2)
+    if p.coef(1,i) ~= q.coef(1,i) || p.coef(2,i) ~= q.coef(2,i)
        out = 0;
        return
     end
