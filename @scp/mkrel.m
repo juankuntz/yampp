@@ -19,10 +19,11 @@ d = rel.relorder;
 rel.ops = cp.ops;
 rel.dualres = 0;
 
-% Initialise sdpvars.
+% Initialise sdpvars and constraints
 
 rel.yvar = sdpvar(nchoosek(n+2*d,2*d),1); 
 y = rel.yvar;
+rel.ycons = [];
 
 % Add objective in terms of the sdpvars and store b vector in case we want 
 % to compute the dual residues later.
@@ -33,25 +34,18 @@ temp = coefficients(rel.obj);
 rel.b = [temp;zeros(nchoosek(n+2*d,2*d)-numel(temp),1)];
 clear temp
 
-% Add mass constraints in terms of the sdpvars.
-
-if ~isempty(cp.mass)
-    rel.ycons = y(1) == cp.mass;
-    rel.F = [1,zeros(1,nchoosek(n+2*d,2*d)-1)];   % Required later to compute dual residues.
-    rel.f = 1;
-end
-
 % Add equality constraints.
 
+rel.F = [];
 for i = 1:numel(cp.eqcon{2})
     temp = coefficients(cp.eqcon{1}(i))';
     rel.F = [rel.F; [temp,zeros(1,nchoosek(n+2*d,2*d)-numel(temp))]]; % Required later to compute dual residues.
     clear temp    
 end
 
-rel.f = [rel.f;cp.eqcon{2}];
+rel.f = cp.eqcon{2};
 
-rel.ycons = [rel.ycons,rel.F(2:end,:)*y == rel.f(2:end)];
+rel.ycons = [rel.ycons,rel.F*y == rel.f];
 
 % Add (linear) inequality constraints NOT IMPLEMENTED: CAREFUL WHEN
 % IMPLEMENTING, IT AFFECTS SOME INDEXING IN SOLVESCP.M. FOR EXAMPLE IN

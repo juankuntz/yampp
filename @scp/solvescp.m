@@ -56,15 +56,15 @@ n = cp.nvar; d = sol.relorder;
 
 switch sol.reltype
     case {'d','D'}
-        ops = cp.ops{1};
+        ops = cp.ops{1,end};
     case {'dd','DD'}
-        ops = cp.ops{2};
+        ops = cp.ops{2,end};
     case {'sdd','SDD'}
-        ops = cp.ops{3};
+        ops = cp.ops{3,end};
     case {'fwk','FWK'}
-        ops = cp.ops{4};
+        ops = cp.ops{4,end};
     case {'psd','PSD'}
-        ops = cp.ops{5};
+        ops = cp.ops{5,end};
 end
 
 if strcmp(sol.minmax,'inf')

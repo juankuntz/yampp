@@ -16,8 +16,6 @@ classdef scp < matlab.mixin.SetGet
         nvar = [];          % Dimension of underlying space.
         obj = {[],[]};      % Contains the description of the objective/s.
         
-        mass = [];          % The mass of the measure. 
-        
         supineq = [];       % Polynomial ineqequalities defining the support of the measure.
         supeq = []          % Polynomial equalities defining the support of the measure -- not implemented yet.
         
@@ -70,47 +68,40 @@ classdef scp < matlab.mixin.SetGet
             try 
                 
             if isstruct(data)
-                for i = 1:5
-                    cp.ops{i} = data;
-                end
+                cp.ops = {data,data,data,data,data};
             else
+                ops = []; label =[];
                 for i = 1:numel(data)
-                    
-                    ops = []; label =[];
-                    
-                    for j = 1:numel(data{i})
-                        
-                        if ischar(data{i}{j})
-                           label{end+1} = data{i}{j};
-                        else
-                           if ~isempty(ops)
-                                error
-                            end
-                           ops = data{i}{j};
+                    if ischar(data{i})
+                       label{end+1} = data{i};
+                    else
+                       if ~isempty(ops)
+                            error
                         end
-                    end                                        
-                           
-                    if isempty(ops) || isempty(label)
-                        error
+                       ops = data{i};
                     end
-                           
-                    for j = 1:numel(label)
-                        
-                        switch label{j}
-                            case {'d','D'}
-                                cp.ops{1} = ops;
-                            case {'dd','DD'}
-                                cp.ops{2} = ops;
-                            case {'sdd','SDD'}
-                                cp.ops{3} = ops;
-                            case {'fwk','FWK'}
-                                cp.ops{4} = ops;
-                            case {'psd','PSD'}
-                                cp.ops{5} = ops;
-                        end
-                    end
-
                 end
+                
+                if isempty(ops) || isempty(label)
+                        error
+                end
+                    
+                for i = 1:numel(label)
+                        temp = cp.ops;
+                    switch label{i}
+                        case {'d','D'}
+                            cp.ops = {ops,temp{2,end},temp{3,end},temp{4,end},temp{5,end}};
+                        case {'dd','DD'}
+                            cp.ops = {temp{1,end},ops,temp{3,end},temp{4,end},temp{5,end}};
+                        case {'sdd','SDD'}
+                            cp.ops = {temp{1,end},temp{2,end},ops,temp{4,end},temp{5,end}};
+                        case {'fwk','FWK'}
+                            cp.ops = {temp{1,end},temp{2,end},temp{3,end},ops,temp{5,end}};
+                        case {'psd','PSD'}
+                            cp.ops = {temp{1,end},temp{2,end},temp{3,end},temp{4,end},ops};
+                    end
+                end
+                    
             end
             
             catch
@@ -120,7 +111,7 @@ classdef scp < matlab.mixin.SetGet
             
         end
         
-        function cp = set.rtyp(cp,data)
+        function set.rtyp(cp,data)
             try
                 types = cp.rtyp;
                 for i = 1:numel(data)
@@ -157,7 +148,7 @@ classdef scp < matlab.mixin.SetGet
             end
         end
         
-        function cp = set.obj(cp,data)
+        function set.obj(cp,data)
             
             try 
                 % Declare shorthands.
@@ -172,6 +163,14 @@ classdef scp < matlab.mixin.SetGet
                     if ~isa(c(i,:),'char') || (strcmp('inf',c(i,:)) && strcmp('sup',c(i,:)))
                         flg = 1;
                     end
+                end
+                
+                % If the objective function is actually specified as a 
+                % double, then convert it into a pol (a user may do this if
+                % she is optimising the mass of a meaure.
+                
+                if isa(f,'double')
+                    f = pol(f);
                 end
                 
                 if ~isa(f,'pol') || ~isequal(numel(f),numel(c(:,1))) || numel(data) > 2 || flg
@@ -189,7 +188,7 @@ classdef scp < matlab.mixin.SetGet
         end 
         
         
-        function cp = set.supeq(cp,p)
+        function set.supeq(cp,p)
             
             if ~isa(p,'pol') || min(size(p)) ~= 1 || numel(data) > 1
                 error('The support of the measure must be specified by vectors of polynomials.');
@@ -198,7 +197,7 @@ classdef scp < matlab.mixin.SetGet
             cp.supeq = [cp.supeq,p(:)];
         end
         
-        function cp = set.supineq(cp,p)
+        function set.supineq(cp,p)
             
                 if ~isa(p,'pol') || min(size(p)) ~= 1 
                     error('The support of the measure must be specified by vectors of polynomials.');
@@ -207,7 +206,7 @@ classdef scp < matlab.mixin.SetGet
                 cp.supineq = [cp.supineq,p(:)];
         end 
         
-        function cp = set.eqcon(cp,data)
+        function set.eqcon(cp,data)
             
             try 
                 % Declare shorthands.
@@ -221,6 +220,14 @@ classdef scp < matlab.mixin.SetGet
                 else
                     p = data{1};
                     c = data{2};
+                end
+                
+                % If the polynomial defining the constraint is actually 
+                % specified as a double, then convert it into a pol (a user
+                % may do this if she is constraining the mass of a meaure).
+                
+                if isa(p,'double')
+                    p = pol(p);
                 end
                 
                 % Check that data is of the correct format.
@@ -239,7 +246,7 @@ classdef scp < matlab.mixin.SetGet
             end   
         end 
             
-        function cp = set.ineqcon(cp,data)
+        function set.ineqcon(cp,data)
             
             % Remark: we only allow the user to add extra constraints, not
             % delete or replace previously declared constraints.
@@ -256,6 +263,14 @@ classdef scp < matlab.mixin.SetGet
                 else
                     p = data{1};
                     c = data{2};
+                end
+                
+                % If the polynomial defining the constraint is actually 
+                % specified as a double, then convert it into a pol (a user
+                % may do this if she is constraining the mass of a meaure).
+                
+                if isa(p,'double')
+                    p = pol(p);
                 end
                 
                 % Check that data is of the correct format.
