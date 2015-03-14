@@ -16,16 +16,7 @@ for i = 1:numel(typ)
     for j = 1:numel(d)
         for k = 1:numel(objf)
             
-            out{end+1}.nvar =  cp.nvar;
-            out{end}.mass = cp.mass;
-            out{end}.seqeqcon = cp.eqcon{1};
-            out{end}.ineqcon = cp.ineqcon{1};
-            out{end}.supcon = cp.supineq;
-            out{end}.ops = cp.ops;
-            %out. = cp.supeqcon;
-            
-            
-            out{end}.relorder =  d(j);
+            out{end+1}.relorder =  d(j);
             out{end}.obj = objf(k);
             out{end}.minmax = objs(k,:);
             

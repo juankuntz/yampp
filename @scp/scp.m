@@ -146,7 +146,7 @@ classdef scp < matlab.mixin.SetGet
         
         function cp = set.supineq(cp,p)
             
-                if ~isa(p,'pol') || min(size(p)) ~= 1 || numel(data) > 1
+                if ~isa(p,'pol') || min(size(p)) ~= 1 
                     error('The support of the measure must be specified by vectors of polynomials.');
                 end
                 
