@@ -3,7 +3,7 @@ classdef scp < matlab.mixin.SetGet
     % Class definition for scp: meant to model moment problems (scp is 
     % short for "sequence conic program").
     
-    % Juan Kuntz, 16/02/2015, last edited 13/03/2015.
+    % Juan Kuntz, 16/02/2015, last edited 14/03/2015.
     
     properties 
 
@@ -45,10 +45,6 @@ classdef scp < matlab.mixin.SetGet
         yobj = []; % Stores the objective/s re-written in terms of the yalmip variables.
         
         dualres = 0;
-        A = [];
-        b = [];
-        F = [];
-        f = [];
         
     end
     
@@ -56,8 +52,12 @@ classdef scp < matlab.mixin.SetGet
         
         % Class constructor
         
-        function obj = scp(varargin)
+        function obj = scp
             
+            % Set default options to sedumi with default yalmip options.
+            
+            set(obj,'ops',sdpsettings('solver','sedumi'));
+
         end
         
         % Property set methods with error messages. Remark: we only allow 
@@ -65,6 +65,60 @@ classdef scp < matlab.mixin.SetGet
         % previously declared constraints. Similarly for the polynomial
         % equalities and inequalities describing the support of the
         % measure.
+        
+        function set.ops(cp,data)
+            try 
+                
+            if isstruct(data)
+                for i = 1:5
+                    cp.ops{i} = data;
+                end
+            else
+                for i = 1:numel(data)
+                    
+                    ops = []; label =[];
+                    
+                    for j = 1:numel(data{i})
+                        
+                        if ischar(data{i}{j})
+                           label{end+1} = data{i}{j};
+                        else
+                           if ~isempty(ops)
+                                error
+                            end
+                           ops = data{i}{j};
+                        end
+                    end                                        
+                           
+                    if isempty(ops) || isempty(label)
+                        error
+                    end
+                           
+                    for j = 1:numel(label)
+                        
+                        switch label{j}
+                            case {'d','D'}
+                                cp.ops{1} = ops;
+                            case {'dd','DD'}
+                                cp.ops{2} = ops;
+                            case {'sdd','SDD'}
+                                cp.ops{3} = ops;
+                            case {'fwk','FWK'}
+                                cp.ops{4} = ops;
+                            case {'psd','PSD'}
+                                cp.ops{5} = ops;
+                        end
+                    end
+
+                end
+            end
+            
+            catch
+                error('Invalid format of input specifying the solver options for the various relaxations.');
+            end
+                
+            
+        end
         
         function cp = set.rtyp(cp,data)
             try
@@ -220,5 +274,15 @@ classdef scp < matlab.mixin.SetGet
             end   
         end 
         
+        % Property get methods.
+        
+        function out = get.ops(cp)
+
+            out = {'D',cp.ops{1}.solver,cp.ops{1};
+                   'DD',cp.ops{2}.solver,cp.ops{2};
+                   'SDD',cp.ops{3}.solver,cp.ops{3};
+                   'FWK',cp.ops{4}.solver,cp.ops{4};
+                   'PSD',cp.ops{5}.solver,cp.ops{5}};
+        end
     end
 end

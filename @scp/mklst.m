@@ -5,7 +5,7 @@ function mklst(cp)
 % The field names are different because of historical reasons, they should
 % be updated.
 
-% Juan Kuntz, 13/03/2015.
+% Juan Kuntz, 14/03/2015.
 
 objs = cp.obj{1}; objf = cp.obj{2};
 

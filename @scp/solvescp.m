@@ -1,7 +1,7 @@
 function solvescp(cp)
 
 %
-% Juan Kuntz, 16/02/2015, last edited 13/03/2015.
+% Juan Kuntz, 16/02/2015, last edited 14/03/2015.
 
 % Extract dual point and save in sol.
 % 
@@ -52,15 +52,27 @@ clear rel;
 
 n = cp.nvar; d = sol.relorder;
 
-%
+% Fish out solver options.
 
+switch sol.reltype
+    case {'d','D'}
+        ops = cp.ops{1};
+    case {'dd','DD'}
+        ops = cp.ops{2};
+    case {'sdd','SDD'}
+        ops = cp.ops{3};
+    case {'fwk','FWK'}
+        ops = cp.ops{4};
+    case {'psd','PSD'}
+        ops = cp.ops{5};
+end
 
 if strcmp(sol.minmax,'inf')
-    temp = optimize(sol.ycons,sol.yobj,cp.ops); % Compute solution.
+    temp = optimize(sol.ycons,sol.yobj,ops); % Compute solution.
 
     sol.dval = -value(dual(sol.ycons(1))); % Not sure why we need the minus sign here...
 elseif strcmp(sol.minmax,'sup')
-    temp = optimize(sol.ycons,-sol.yobj,cp.ops);
+    temp = optimize(sol.ycons,-sol.yobj,ops);
 
     sol.dval = value(dual(sol.ycons(1))); 
 end

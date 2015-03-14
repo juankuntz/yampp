@@ -2,7 +2,7 @@ function rel = mkrel(cp,rspec)
 
 % Construct the appropiate moment problem.
 
-% Juan Kuntz, 13/02/2015, last edited 13/03/2015.
+% Juan Kuntz, 13/02/2015, last edited 14/03/2015.
 
 % Save data contained in rspec into rel and clear rspec.
 
@@ -220,7 +220,7 @@ tab = ncktab(n+2*d);
 
 % General moment constraint.
 
-mon = zeros(n,l2d);   %l2d instead of ld here because we use mon to construct the localising matrices.
+mon = zeros(n,l2d);   %l2d instead of ld here because we use mon to construct the localising matrices later on.
 r = zeros(n,1);
 
 for i = 1:ld
