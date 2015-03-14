@@ -87,14 +87,7 @@ end
     [temp2,~] = check(sol.ycons);
 
     sol.pres{1,2} = [];
-
     l = 0;
-    if ~isempty(cp.mass)
-        sol.pres{1,1} = 'Mass constraint.';
-        sol.pres{1,2} = temp2(1);
-        l = l + 1;
-    end
-
     if ~isempty(cp.eqcon{1})
         if l == 0
             sol.pres{1,1} = 'Equality constraints.';

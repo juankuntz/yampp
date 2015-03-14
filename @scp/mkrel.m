@@ -36,14 +36,17 @@ clear temp
 
 % Add equality constraints.
 
-rel.F = [];
+rel.F = []; rel.f = [];
 for i = 1:numel(cp.eqcon{2})
-    temp = coefficients(cp.eqcon{1}(i))';
-    rel.F = [rel.F; [temp,zeros(1,nchoosek(n+2*d,2*d)-numel(temp))]]; % Required later to compute dual residues.
-    clear temp    
+    if deg(cp.eqcon{1}(i)) <= 2*d
+        temp = coefficients(cp.eqcon{1}(i))';
+        rel.F = [rel.F; [temp,zeros(1,nchoosek(n+2*d,2*d)-numel(temp))]]; % Required later to compute dual residues.
+        rel.f = [rel.f;cp.eqcon{2}(i)];
+        clear temp  
+    else
+        warning(['At least one equality constraint has been ignored because the degree of that constraint`s polynomial is too large of the relaxations of order ',num2str(d),'.']);
+    end
 end
-
-rel.f = cp.eqcon{2};
 
 rel.ycons = [rel.ycons,rel.F*y == rel.f];
 
