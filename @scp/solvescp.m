@@ -1,7 +1,7 @@
 function solvescp(cp)
 
 %
-% Juan Kuntz, 16/02/2015, last edited 14/03/2015.
+% Juan Kuntz, 16/02/2015, last edited 16/03/2015.
 
 % Extract dual point and save in sol.
 % 
@@ -19,10 +19,11 @@ if (~isempty(cp.supineq) && 2*min(cp.rord) < prop(cp.supineq(1),'d')) || (~isemp
     error('The degree of one of the polynomial defining the support is bigger than the order of the moments included in the moment problem, increase the relaxation order of the problem.'); 
 end
 
-if (~isempty(cp.eqcon) && prop(cp.eqcon{1},'d') > 2*min(cp.rord)) || (~isempty(cp.eqcon) && prop(cp.ineqcon{1},'d') > 2*min(cp.rord))
+temp1 = prop(cp.eqcon{1},'d'); temp2 = prop(cp.ineqcon{1},'d');
+if (~isempty(cp.eqcon) && temp1{1} > 2*min(cp.rord)) || (~isempty(cp.eqcon) && temp2{1} > 2*min(cp.rord))
     warning('The polynomial specifying at least one equality or inequality constraint is of higher degree than (two times) the order of at least one relaxation. When solving a relaxation of order d, any equality or inequality constraint of degree greater than 2d is ignored.');
 end
-
+clear temp1 temp2
 setvars(cp);    % Decide the dimension of the underlying space.
 mklst(cp);      % Make list containing the specifications of each relaxations to be solved.
 
