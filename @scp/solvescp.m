@@ -15,12 +15,13 @@ function solvescp(cp)
 % Check that the degree of no polynomial in the problem's description
 % exceeds (2-times) the relaxation order. 
 
-if (~isempty(cp.supineq) && 2*min(cp.rord) < prop(cp.supineq(1),'d')) || (~isempty(cp.eqcon{1}) && 2*min(cp.rord) < prop(cp.eqcon{1}(1),'d')) || (~isempty(cp.ineqcon{1}) && 2*min(cp.rord) < prop(cp.ineqcon{1}(1),'d')) || (~isempty(cp.obj{2}) && 2*min(cp.rord) < prop(cp.obj{2}(1),'d')) 
-    error('The degree of one of the polynomial defining the support is bigger than the order of the moments included in the moment problem, increase the relaxation order of the problem.'); 
+if (~isempty(cp.supineq) && 2*min(cp.rord) < prop(cp.supineq(1),'d')) || (~isempty(cp.obj{2}) && 2*min(cp.rord) < prop(cp.obj{2}(1),'d')) 
+    error('The degree of one of the polynomials defining the measure`s support or defining the objective is bigger than the order of the moments included in the moment problem, increase the relaxation order.'); 
 end
 
-temp1 = prop(cp.eqcon{1},'d'); temp2 = prop(cp.ineqcon{1},'d');
-if (~isempty(cp.eqcon) && temp1{1} > 2*min(cp.rord)) || (~isempty(cp.eqcon) && temp2{1} > 2*min(cp.rord))
+% Check whether any constraints are ignored.
+
+if (~isempty(cp.eqcon{1}) && prop(cp.eqcon{1}(1),'d') > 2*min(cp.rord)) || (~isempty(cp.ineqcon{1}) && prop(cp.ineqcon{1}(1),'d') > 2*min(cp.rord))
     warning('The polynomial specifying at least one equality or inequality constraint is of higher degree than (two times) the order of at least one relaxation. When solving a relaxation of order d, any equality or inequality constraint of degree greater than 2d is ignored.');
 end
 clear temp1 temp2
