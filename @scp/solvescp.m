@@ -51,24 +51,24 @@ n = cp.nvar; d = sol.rord;
 
 % Fish out solver options.
 
-switch sol.rtyp
-    case {'d','D'}
-        ops = cp.ops{1,end};
-    case {'dd','DD'}
-        ops = cp.ops{2,end};
-    case {'sdd','SDD'}
-        ops = cp.ops{3,end};
-    case {'fwk','FWK'}
-        ops = cp.ops{4,end};
-    case {'psd','PSD'}
-        ops = cp.ops{5,end};
-end
+% switch sol.rtyp
+%     case {'d','D'}
+%         ops = cp.ops{1,end};
+%     case {'dd','DD'}
+%         ops = cp.ops{2,end};
+%     case {'sdd','SDD'}
+%         ops = cp.ops{3,end};
+%     case {'fwk','FWK'}
+%         ops = cp.ops{4,end};
+%     case {'psd','PSD'}
+%         ops = cp.ops{5,end};
+% end
 
 if strcmp(sol.objs,'inf')
-    temp = optimize(sol.ycons,sol.yobj,ops); % Compute solution.
+    temp = optimize(sol.ycons,sol.yobj,sol.ops); % Compute solution.
     sol.dval = -value(dual(sol.ycons(1))); % Not sure why we need the minus sign here...
 elseif strcmp(sol.objs,'sup')
-    temp = optimize(sol.ycons,-sol.yobj,ops);
+    temp = optimize(sol.ycons,-sol.yobj,sol.ops);
     sol.dval = value(dual(sol.ycons(1))); 
 end
 

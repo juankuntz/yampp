@@ -19,10 +19,11 @@ properties
     
     % Yalmip relaxation data.
     
-    yvar = [];         % Yalmip variables.
+    yvar = [];      % Yalmip variables.
     ycons = [];     % Yalmip constraints.
     yobj = [];      % Yalmip objective.
-    info = [];  % Yalmip diagnostics.
+    info = [];      % Yalmip diagnostics.
+    ops = [] ;      % Yalmip options.
     
     % Conic program data; used to compute dual residues.
     

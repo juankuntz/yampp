@@ -8,7 +8,7 @@ function rel = mkrel(cp,rspec)
 
 rel = scprel;
 rel.rtyp = rspec.rtyp; rel.rord = rspec.rord; rel.objf = rspec.objf; 
-rel.FW = rspec.FW; rel.objs = rspec.objs;
+rel.FW = rspec.FW; rel.objs = rspec.objs; rel.ops = rspec.ops;
 clear rspec;
 
 % Declare shorthands.
