@@ -6,18 +6,15 @@ function rel = mkrel(cp,rspec)
 
 % Save data contained in rspec into rel and clear rspec.
 
-rel = rspec;
+rel = scprel;
+rel.rtyp = rspec.rtyp; rel.rord = rspec.rord; rel.objf = rspec.objf; 
+rel.FW = rspec.FW; rel.objs = rspec.objs;
 clear rspec;
 
 % Declare shorthands.
 
 n = cp.nvar;
-d = rel.relorder;
-
-% THIS NEEDS FIXING IN THE FUTURE
-
-rel.ops = cp.ops;
-rel.dualres = 0;
+d = rel.rord;
 
 % Initialise sdpvars and constraints
 
@@ -28,9 +25,9 @@ rel.ycons = [];
 % Add objective in terms of the sdpvars and store b vector in case we want 
 % to compute the dual residues later.
 
-rel.yobj = rel.obj*y;
+rel.yobj = rel.objf*y;
 
-temp = coefficients(rel.obj);
+temp = coefficients(rel.objf);
 rel.b = [temp;zeros(nchoosek(n+2*d,2*d)-numel(temp),1)];
 clear temp
 
@@ -65,7 +62,7 @@ rel.ycons = [rel.ycons,rel.F*y == rel.f];
 
 % Add moment constraints.
 
-switch rel.reltype
+switch rel.rtyp
     case 'D'
         rel = di(cp,rel);
     case 'DD'
@@ -85,7 +82,7 @@ function rel = di(cp,rel) % D constraints.
 % Declare shorthands.
 
 n = cp.nvar; 
-d = rel.relorder;
+d = rel.rord;
 y = rel.yvar;
 
 ld = nchoosek(n+d,d);
@@ -133,7 +130,7 @@ function rel = dd(cp,rel) % DD constraints.
 % Declare shorthands.
 
 n = cp.nvar; 
-d = rel.relorder;
+d = rel.rord;
 y = rel.yvar;
 
 ld = nchoosek(n+d,d);
@@ -208,7 +205,7 @@ function rel = sdd(cp,rel) % SDD constraints.
 % Declare shorthands.
 
 n = cp.nvar; 
-d = rel.relorder;
+d = rel.rord;
 y = rel.yvar;
 
 ld = nchoosek(n+d,d);
@@ -367,7 +364,7 @@ function rel = psd(cp,rel) % PSD constraints.
 % Declare shorthands.
 
 n = cp.nvar; 
-d = rel.relorder;
+d = rel.rord;
 y = rel.yvar;
 
 ld = nchoosek(n+d,d);

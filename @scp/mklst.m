@@ -16,22 +16,22 @@ for i = 1:numel(typ)
     for j = 1:numel(d)
         for k = 1:numel(objf)
             
-            out{end+1}.relorder =  d(j);
-            out{end}.obj = objf(k);
-            out{end}.minmax = objs(k,:);
+            out{end+1}.rord =  d(j);
+            out{end}.objf = objf(k);
+            out{end}.objs = objs(k,:);
             
             out{end}.FW = [];
             if ischar(typ{i}) == 1
-                out{end}.reltype = typ{i};
+                out{end}.rtyp = typ{i};
+                out{end}.FW = [];
             else
                 temp = typ{i};
-                out{end}.reltype = temp{1};
+                out{end}.rtyp = temp{1};
                 out{end}.FW = temp{2};
             end
 
         end
     end
 end
-    
 cp.rlst = out;
 end

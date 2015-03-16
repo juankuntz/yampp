@@ -53,14 +53,14 @@ end
 
 for i = 1:numel(cp.sol)
     test = 1;
-    if ~isempty(d) && any(cp.sol{i}.relorder == d) == 0
+    if ~isempty(d) && any(cp.sol{i}.rord == d) == 0
         test = 0;
-    elseif ~isempty(objf) && any(cp.sol{i}.obj == objf) == 0
+    elseif ~isempty(objf) && any(cp.sol{i}.objf == objf) == 0
         test = 0;
     elseif ~isempty(objs) 
         flg = 1;
         for j = 1:numel(objs)
-            if strcmpi(objs{j},cp.sol{i}.minmax)
+            if strcmpi(objs{j},cp.sol{i}.objs)
                 flg = 0;
             end
         end
@@ -70,7 +70,7 @@ for i = 1:numel(cp.sol)
     elseif ~isempty(types)
         flg = 1;
         for j = 1:numel(types)
-            if strcmpi(types{j},cp.sol{i}.reltype)
+            if strcmpi(types{j},cp.sol{i}.rtyp)
                 flg = 0;
             end
         end

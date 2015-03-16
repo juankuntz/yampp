@@ -24,23 +24,22 @@ classdef scp < matlab.mixin.SetGet
         
         % Properties describing the relaxations to be solved.
         
-        rtyp = [];      % Type of relaxation {D,DD,SDD,{FKW,k},PSD}.
-        rord = [];      % Order of relaxation.
-        rlst = [];      % Contains the list of relaxations, used in combination with mkscp by solvescp to build the relaxations.
-        rels = [];      % Contains the relaxations.
-        
+        rtyp = [];      % Types of relaxation {D,DD,SDD,{FKW,k},PSD} to be solved.
+        rord = [];      % Orders of relaxation to be solved.
+        rlst = [];      % Cell array containing the specification of each 
+                        % relaxation to be solved, used in combination with 
+                        % mkscp by solvescp to build the relaxations.
         
         % Solver options
         
         ops = []; % Solver options.
         parallelise = 0; % Parallelise option.
         
-        sol = []; % A cell array, each entry of which contains the info on some solution.
-
+        % Property storing data on solved relaxations
         
-        yvar = []; % Stores the yalmip variables.
-        ycons = []; % Stores the above constraints translated into yalmip constraints.
-        yobj = []; % Stores the objective/s re-written in terms of the yalmip variables.
+        sol = []; % A cell array, each entry of which contains all the data on one solved relaxation.
+
+        % This property requires fixing.
         
         dualres = 0;
         
@@ -48,7 +47,7 @@ classdef scp < matlab.mixin.SetGet
     
     methods
         
-        % Class constructor
+        % Class constructor.
         
         function obj = scp
             

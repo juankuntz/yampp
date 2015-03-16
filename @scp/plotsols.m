@@ -3,7 +3,7 @@ function plotsols(varargin)
 % Creates scatter plots of the primal values of relaxations of cp that
 % were succesfully solved.
 
-% Juan Kuntz 14/03/2015
+% Juan Kuntz, 14/03/2015, last edited 16/03/2015
 
 p =[];
 for i = 1:nargin
@@ -34,11 +34,9 @@ for i = 1:numel(temp)
     end
 end
 
-clear temp
-
+clear temp;
 
 types = {'D','DD','SDD','FWK','PSD'};
-c = [1,1,0;1,0,0;0,1,0;0,0,1;0,1,1];
 
 for i = 1:numel(p)
     
@@ -70,8 +68,10 @@ for i = 1:numel(p)
     
     
     figure(j);
-    xlabel('relorder'); ylabel('pval'); title(computestring(p(i)));
-    c = rand(numel(present),3);
+    xlabel('rord'); ylabel('pval'); title(computestring(p(i)));
+    
+    c =  [1,0.8,0;1,0,0;0,0.7,0;0,0,1;0,1,1];
+    %c = rand(numel(present),3);
     
     hold on
     
@@ -84,17 +84,17 @@ for i = 1:numel(p)
             scatter(mfin{j}(1,:),mfin{j}(2,:),[],c(j,:),'d','filled');  
         end
         if ~isempty(inf{j})
-            scatter(inf{j}(1,:),(MAX+bf*j)*ones(1,numel(inf{j}(1,:))),[],c(j,:),'^','filled');  
+            scatter(inf{j}(1,:),(MAX+bf*(1+numel(present)-j))*ones(1,numel(inf{j}(1,:))),[],c(j,:),'^','filled');  
         end
         if ~isempty(minf{j})
-            scatter(minf{j}(1,:),(MIN-bf*j)*ones(1,numel(minf{j}(1,:))),[],c(j,:),'v','filled');
+            scatter(minf{j}(1,:),(MIN-bf*(1+numel(present)-j))*ones(1,numel(minf{j}(1,:))),[],c(j,:),'v','filled');
         end
     end
     
     % Build legend, this is a hack.
 
     for j = 1:numel(present)
-        h(j) = plot(NaN,NaN,'color',c(j,:));
+        h(j) = plot(NaN,NaN,'color',c(j,:),'linewidth',3);
     end
     
     h = [h,plot(NaN,NaN,'marker','o','color','k','linestyle','none','MarkerFaceColor','k'),plot(NaN,NaN,'marker','d','color','k','linestyle','none','MarkerFaceColor','k'),...
@@ -111,22 +111,22 @@ function [fin,mfin,inf,minf] = sortsols(sols)
 fin = []; mfin = []; inf = []; minf = [];
 for i = 1:numel(sols)
     if sols{i}.info.problem == 0 
-        if strcmp(sols{i}.minmax,'inf') % Feasible.
-            mfin(:,end+1) = [sols{i}.relorder,sols{i}.pval];
+        if strcmp(sols{i}.objs,'inf') % Feasible.
+            mfin(:,end+1) = [sols{i}.rord,sols{i}.pval];
         else
-            fin(:,end+1) = [sols{i}.relorder,sols{i}.pval];
+            fin(:,end+1) = [sols{i}.rord,sols{i}.pval];
         end
     elseif sols{i}.info.problem == 2 
-        if strcmp(sols{i}.minmax,'inf') % Unbounded. 
-            minf(:,end+1) = [sols{i}.relorder,sols{i}.pval];
+        if strcmp(sols{i}.objs,'inf') % Unbounded. 
+            minf(:,end+1) = [sols{i}.rord,sols{i}.pval];
         else
-            inf(:,end+1) = [sols{i}.relorder,sols{i}.pval];
+            inf(:,end+1) = [sols{i}.rord,sols{i}.pval];
         end
     elseif sols{i}.info.problem == 1 
         if strcmp(sols{i}.minmax,'inf') % Infeasible.
-            inf(:,end+1) = [sols{i}.relorder,sols{i}.pval];
+            inf(:,end+1) = [sols{i}.rord,sols{i}.pval];
         else
-            minf(:,end+1) = [sols{i}.relorder,sols{i}.pval];
+            minf(:,end+1) = [sols{i}.rord,sols{i}.pval];
         end
     end
 end

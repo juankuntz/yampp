@@ -36,10 +36,7 @@ else
     end
 end
 
-for i = 1:numel(cp.rlst)
-   cp.sol{i} = sol{i}; 
-end
-
+cp.sol = sol; 
 end
 
 
@@ -50,11 +47,11 @@ clear rel;
 
 % Shorthands
 
-n = cp.nvar; d = sol.relorder;
+n = cp.nvar; d = sol.rord;
 
 % Fish out solver options.
 
-switch sol.reltype
+switch sol.rtyp
     case {'d','D'}
         ops = cp.ops{1,end};
     case {'dd','DD'}
@@ -67,13 +64,11 @@ switch sol.reltype
         ops = cp.ops{5,end};
 end
 
-if strcmp(sol.minmax,'inf')
+if strcmp(sol.objs,'inf')
     temp = optimize(sol.ycons,sol.yobj,ops); % Compute solution.
-
     sol.dval = -value(dual(sol.ycons(1))); % Not sure why we need the minus sign here...
-elseif strcmp(sol.minmax,'sup')
+elseif strcmp(sol.objs,'sup')
     temp = optimize(sol.ycons,-sol.yobj,ops);
-
     sol.dval = value(dual(sol.ycons(1))); 
 end
 
@@ -120,13 +115,13 @@ end
     % into the primal value.
 
     if sol.info.problem == 1 
-        if strcmp(sol.minmax,'inf')
+        if strcmp(sol.objs,'inf')
             sol.pval = inf;
         else
             sol.pval = -inf;
         end
     elseif sol.info.problem == 2
-        if strcmp(sol.minmax,'inf')
+        if strcmp(sol.objs,'inf')
             sol.pval = -inf;
         else
             sol.pval = inf;
@@ -154,7 +149,7 @@ end
     clear t;
 
 
-    if strcmp(sol.minmax,'inf')
+    if strcmp(sol.objs,'inf')
         temp = temp + sol.b;
     else
         temp = temp - sol.b;
