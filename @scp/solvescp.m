@@ -19,6 +19,10 @@ if (~isempty(cp.supineq) && 2*min(cp.rord) < prop(cp.supineq(1),'d')) || (~isemp
     error('The degree of one of the polynomial defining the support is bigger than the order of the moments included in the moment problem, increase the relaxation order of the problem.'); 
 end
 
+if (~isempty(cp.eqcon) && prop(cp.eqcon{1},'d') > 2*min(cp.rord)) || (~isempty(cp.eqcon) && prop(cp.ineqcon{1},'d') > 2*min(cp.rord))
+    warning('The polynomial specifying at least one equality or inequality constraint is of higher degree than (two times) the order of at least one relaxation. When solving a relaxation of order d, any equality or inequality constraint of degree greater than 2d is ignored.');
+end
+
 setvars(cp);    % Decide the dimension of the underlying space.
 mklst(cp);      % Make list containing the specifications of each relaxations to be solved.
 
@@ -49,20 +53,7 @@ clear rel;
 
 n = cp.nvar; d = sol.rord;
 
-% Fish out solver options.
-
-% switch sol.rtyp
-%     case {'d','D'}
-%         ops = cp.ops{1,end};
-%     case {'dd','DD'}
-%         ops = cp.ops{2,end};
-%     case {'sdd','SDD'}
-%         ops = cp.ops{3,end};
-%     case {'fwk','FWK'}
-%         ops = cp.ops{4,end};
-%     case {'psd','PSD'}
-%         ops = cp.ops{5,end};
-% end
+% Solve relaxation.
 
 if strcmp(sol.objs,'inf')
     temp = optimize(sol.ycons,sol.yobj,sol.ops); % Compute solution.
