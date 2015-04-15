@@ -51,7 +51,7 @@ function sol = solve(cp,rel)
 sol = rel; 
 clear rel;
 
-% Shorthands
+% Shorthands.
 
 n = cp.nvar; d = sol.rord;
 
@@ -59,202 +59,69 @@ n = cp.nvar; d = sol.rord;
 
 if strcmp(sol.objs,'inf')
     temp = optimize(sol.ycons,sol.yobj,sol.ops); % Compute solution.
-    sol.dval = -value(dual(sol.ycons(1))); % Not sure why we need the minus sign here...
+    if ~isempty(cp.eqcon{1})
+        sol.dval = -sol.f'*value(dual(sol.ycons(1))); % Minus sign here because yalmip fits this to a maximisation problem, see Lofberg's paper on Dualize.
+    end
 elseif strcmp(sol.objs,'sup')
     temp = optimize(sol.ycons,-sol.yobj,sol.ops);
-    sol.dval = value(dual(sol.ycons(1))); 
+    if ~isempty(cp.eqcon{1})
+        sol.dval = sol.f'*value(dual(sol.ycons(1))); 
+    end
 end
 
-    % Store solution.
+% Store solution.
 
-    sol.pval = value(sol.yobj);
-    sol.ppoint = seq(n,2*d,value(sol.yvar));
+sol.pval = value(sol.yobj);
+sol.ppoint = seq(n,2*d,value(sol.yvar));
 
-    % Store primal residues in a formated table.
+% Store primal residues in a formated table.
 
-    [temp2,~] = check(sol.ycons);
+[temp2,~] = check(sol.ycons);
 
-    sol.pres{1,2} = [];
-    l = 0;
-    if ~isempty(cp.eqcon{1})
-        if l == 0
-            sol.pres{1,1} = 'Equality constraints.';
-            sol.pres{1,2} = temp2(1);
-        else
-            sol.pres{2,1} = 'Equality constraints.';
-            sol.pres{2,2} = temp2(2);
-        end
-        l = l + 1;
-    end
-
+sol.pres{1,2} = [];
+l = 0;
+if ~isempty(cp.eqcon{1})
     if l == 0
-        sol.pres{1,1} = 'Cone constraints.';
+        sol.pres{1,1} = 'Equality constraints.';
         sol.pres{1,2} = temp2(1);
     else
-        sol.pres{end+1,1} = 'Cone constraints.';
-        sol.pres{end,2} = temp2(l+1);
+        sol.pres{2,1} = 'Equality constraints.';
+        sol.pres{2,2} = temp2(2);
     end
     l = l + 1;
+end
 
-   for j = 1:numel(cp.supineq)
-        sol.pres{end,2} = [sol.pres{end,2};temp2(l+j)];
-   end
+if l == 0
+    sol.pres{1,1} = 'Cone constraints.';
+    sol.pres{1,2} = temp2(1);
+else
+    sol.pres{end+1,1} = 'Cone constraints.';
+    sol.pres{end,2} = temp2(l+1);
+end
+l = l + 1;
 
-    % Store yalmip output info.
+for j = 1:numel(cp.supineq)
+    sol.pres{end,2} = [sol.pres{end,2};temp2(l+j)];
+end
 
-    sol.info = temp; clear temp temp2;
+% Store yalmip output info.
 
-    % If problem is unbounded or infeasible store the appropiate +-inf
-    % into the primal value.
+sol.info = temp; clear temp temp2;
 
-    if sol.info.problem == 1 
-        if strcmp(sol.objs,'inf')
-            sol.pval = inf;
-        else
-            sol.pval = -inf;
-        end
-    elseif sol.info.problem == 2
-        if strcmp(sol.objs,'inf')
-            sol.pval = -inf;
-        else
-            sol.pval = inf;
-        end
-    end
+% If problem is unbounded or infeasible store the appropiate +-inf
+% into the primal value.
 
-    % If dual residues not requested, exit (saves considerable time).
-
-    if cp.dualres == 0
-        return
-    end
-
-    % Compute and store the dual residues in a formated table.      
-
-    if ~isempty(cp.mass) && ~isempty(cp.eqcon{1})
-        t = dual(sol.ycons(1)); % Dual of the mass constraint.
-        t(2:numel(cp.eqcon{1})+1,1) = dual(sol.ycons(2)); % Dual of the equality constraints
-    elseif ~isempty(cp.mass)
-        t = dual(sol.ycons(1)); % Dual of the mass constraint.
-    elseif ~isempty(cp.eqcon{1})
-        t = dual(sol.ycons(1)); % Dual of the equality constraints
-    end
-
-    temp = sol.F'*t; 
-    clear t;
-
-
+if sol.info.problem == 1 
     if strcmp(sol.objs,'inf')
-        temp = temp + sol.b;
+        sol.pval = inf;
     else
-        temp = temp - sol.b;
+        sol.pval = -inf;
     end
-
-    % Onto the support constraints.
-
-    sol.dres{1,1} = 'Equality constraints';
-
-    switch sol.reltype
-        case {'D','DD'}
-
-            for j = 1:numel(cp.supcon)+1
-                if isempty(cp.mass) && isempty(cp.eqcon{1})
-                    X{j} = dual(sol.ycons(j));
-                elseif isempty(cp.mass) || isempty(cp.eqcon{1})
-                    X{j} = dual(sol.ycons(1+j));
-                else
-                    X{j} = dual(sol.ycons(2+j));
-                end
-            end
-
-            for j = 1:numel(cp.supcon)+1
-                temp = temp + sol.A{j}*X{j};
-            end
-
-            sol.dres{1,2} = -max(abs(temp));   % Return Linfty norm of equality constraing violations
-            clear temp
-
-            sol.dres{2,1} = 'Cone constraints';
-            for j = 1:numel(cp.supcon)+1
-                sol.dres{2,2} = [sol.dres{2,2};min(X{j})];
-            end
-
-        case 'SDD'
-
-            if isempty(cp.mass) && isempty(cp.eqcon{1})
-                L = 0;
-            elseif isempty(cp.mass) || isempty(cp.eqcon{1})
-                L = 1;
-            else
-                L = 2;
-            end
-
-            % Initialise SOC dual variables
-
-            X{1} = zeros(3*nchoosek(n+d,d),1);
-            
-            for j = 1:numel(cp.supcon)
-                dc = deg(cp.supcon(j));
-                X{j+1} = zeros(3*nchoosek(n+floor(d-dc/2),floor(d-dc/2),1));
-            end
-
-            % Populate the SOC duals
-
-            J = 1;
-            for j = 1:numel(cp.supcon)+1
-                temp2 = sol.A{j};
-                for k = 1:numel(temp2)
-                    X{j}(1+3*(k-1):3*k,:) = dual(sol.ycons(L+J));
-                    temp = temp + temp2{k}*X{j}(1+3*(k-1):3*k,:);
-                    J = J + 1;
-                end
-                clear temp2
-            end
-
-            sol.dres{1,2} = -max(abs(temp));    % Return Linfty norm of equality constraing violations
-            clear temp
-
-            sol.dres{2,1} = 'Cone constraints';
-            sol.dres{2,2} = [];
-            for j = 1:numel(cp.supcon)+1
-                temp = X{j};
-                sol.dres{2,2} = [sol.dres{2,2}; X{j}(1)-sqrt(X{j}(2)^2+X{j}(3)^2)];
-                for k = 2:numel(X{j})/3
-                    sol.dres{2,2} = min(sol.dres{2,2},X{j}((k-1)*3+1)-sqrt(X{j}((k-1)*3+2)^2+X{j}((k-1)*3+3)^2));
-                end
-            end
-
-        case 'FKW'
-
-        case 'PSD'
-
-            for j = 1:numel(cp.supcon)+1
-                if isempty(cp.mass) && isempty(cp.eqcon)
-                    X{j} = dual(cp.ycons(j));
-                elseif isempty(cp.mass) || isempty(cp.eqcon)
-                    X{j} = dual(sol.ycons(1+j));
-                else
-                    X{j} = dual(sol.ycons(2+j));
-                end
-            end
-
-            for j = 1:numel(cp.supcon)+1
-                temp2 = [];
-                A = sol.A{j};
-                for k = 1:numel(sol.A{j})
-                    temp2 = [temp2;sum(sum(X{j}.*A{k}))];
-                end
-                clear A;
-
-                temp = temp + temp2; clear temp2
-            end
-
-            sol.dres{1,2} = -max(abs(temp)); % Return Linfty norm of equality constraing violations
-            clear temp
-
-            sol.dres{2,2} = [];
-
-            for j = 1:numel(cp.supcon)+1
-                sol.dres{2,1} = 'Cone constraints';
-                sol.dres{2,2} = [sol.dres{2,2};min(eig(X{j}))];
-            end
+elseif sol.info.problem == 2
+    if strcmp(sol.objs,'inf')
+        sol.pval = -inf;
+    else
+        sol.pval = inf;
     end
+end
 end

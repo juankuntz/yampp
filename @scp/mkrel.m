@@ -61,15 +61,15 @@ rel.ycons = [rel.ycons,rel.F*y == rel.f];
 % Add moment constraints.
 
 switch rel.rtyp
-    case 'D'
+    case {'d','D'}
         rel = di(cp,rel);
-    case 'DD'
+    case {'dd','DD'}
         rel = dd(cp,rel);
-    case 'SDD'
+    case {'sdd','SDD'}
         rel = sdd(cp,rel);
-    case 'FWK'
+    case {'fwk','FWK'}
         rel = fwk(cp,rel);
-    case 'PSD'
+    case {'psd','PSD'}
         rel = psd(cp,rel);
 end
 
