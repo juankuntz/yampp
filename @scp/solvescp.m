@@ -44,7 +44,6 @@ end
 cp.sol = sol; 
 end
 
-
 function sol = solve(cp,rel)
 
 sol = rel; 
@@ -58,20 +57,32 @@ n = cp.nvar; d = sol.rord;
 
 if strcmp(sol.objs,'inf')
     temp = optimize(sol.ycons,sol.yobj,sol.ops); % Compute solution.
-    if ~isempty(cp.eqcon{1})
-        sol.dval = -sol.f'*value(dual(sol.ycons(1))); % Minus sign here because yalmip fits this to a maximisation problem, see Lofberg's paper on Dualize.
-    end
 elseif strcmp(sol.objs,'sup')
     temp = optimize(sol.ycons,-sol.yobj,sol.ops);
-    if ~isempty(cp.eqcon{1})
-        sol.dval = sol.f'*value(dual(sol.ycons(1))); 
-    end
 end
 
-% Store solution.
+% Store primal and dual solutions
 
 sol.pval = value(sol.yobj);
 sol.ppoint = seq(n,2*d,value(sol.yvar));
+sol.lambda = value(dual(sol.ycons(1)));
+
+if ~isempty(sol.F)
+    sol.lambda = value(dual(sol.ycons(1)));
+    if strcmp(sol.objs,'inf')
+        sol.dval = -sol.f'*value(dual(sol.ycons(1))); % Minus sign here because yalmip fits this to a maximisation problem, see Lofberg's paper on Dualize.
+    elseif strcmp(sol.objs,'sup')
+        sol.dval = sol.f'*sol.lambda; 
+    end
+    for i = 1:numel(sol.A)
+        sol.X{i} = value(dual(sol.ycons(i+1)));
+    end
+else 
+    sol.dval = 0;
+    for i = 1:numel(sol.A)
+        sol.X{i} = value(dual(sol.ycons(i)));
+    end
+end
 
 % Store primal residues in a formated table.
 
@@ -103,6 +114,12 @@ for j = 1:numel(cp.supineq)
     sol.pres{end,2} = [sol.pres{end,2};temp2(l+j)];
 end
 
+% Compute and solve dual residues.
+
+if strcmpi(sol.rtyp,'PSD')
+    computedualsres(sol);
+end
+
 % Store yalmip output info.
 
 sol.info = temp; clear temp temp2;
@@ -124,3 +141,120 @@ elseif sol.info.problem == 2
     end
 end
 end
+
+function computedualsres(rel)
+
+% Only PSD computations are working at the moment.
+
+temp = 0;
+if ~isempty(rel.F)
+    temp = rel.F'*rel.lambda; 
+end
+
+if strcmp(rel.objs,'inf')
+    temp = temp + rel.b;
+else
+    temp = temp - rel.b;
+end
+
+% Onto the support constraints.
+
+rel.dres{1,1} = 'Equality constraints';
+
+switch rel.rtyp
+    case {'D','DD'}
+
+        for j = 1:numel(rel.supcon)+1
+            if isempty(rel.F{1})
+                X{j} = dual(rel.ycons(j));
+            else
+                X{j} = dual(rel.ycons(2+j));
+            end
+        end
+
+        for j = 1:numel(rel.supcon)+1
+            temp = temp + rel.A{j}*X{j};
+        end
+
+        rel.dres{1,2} = -max(abs(temp));   % Return Linfty norm of equality constraing violations
+        clear temp
+
+        rel.dres{2,1} = 'Cone constraints';
+        for j = 1:numel(rel.supcon)+1
+            rel.dres{2,2} = [rel.dres{2,2};min(X{j})];
+        end
+
+    case 'SDD'
+
+        if isempty(rel.mass) && isempty(rel.F{1})
+            L = 0;
+        elseif isempty(rel.mass) || isempty(rel.F{1})
+            L = 1;
+        else
+            L = 2;
+        end
+
+        % Initialise SOC dual variables
+
+        X{1} = zeros(3*nchoosek(n+d,d),1);
+
+        for j = 1:numel(rel.supcon)
+            dc = deg(rel.supcon(j));
+            X{j+1} = zeros(3*nchoosek(n+floor(d-dc/2),floor(d-dc/2),1));
+        end
+
+        % Populate the SOC duals
+
+        J = 1;
+        for j = 1:numel(rel.supcon)+1
+            temp2 = rel.A{j};
+            for k = 1:numel(temp2)
+                X{j}(1+3*(k-1):3*k,:) = dual(rel.ycons(L+J));
+                temp = temp + temp2{k}*X{j}(1+3*(k-1):3*k,:);
+                J = J + 1;
+            end
+            clear temp2
+        end
+
+        rel.dres{1,2} = -max(abs(temp));    % Return Linfty norm of equality constraing violations
+        clear temp
+
+        rel.dres{2,1} = 'Cone constraints';
+        rel.dres{2,2} = [];
+        for j = 1:numel(rel.supcon)+1
+            temp = X{j};
+            rel.dres{2,2} = [rel.dres{2,2}; X{j}(1)-sqrt(X{j}(2)^2+X{j}(3)^2)];
+            for k = 2:numel(X{j})/3
+                rel.dres{2,2} = min(rel.dres{2,2},X{j}((k-1)*3+1)-sqrt(X{j}((k-1)*3+2)^2+X{j}((k-1)*3+3)^2));
+            end
+        end
+
+    case 'FKW'
+
+    case 'PSD'
+
+
+        for j = 1:numel(rel.A)
+            temp2 = [];
+            A = rel.A{j};
+            for k = 1:numel(rel.A{j})
+                temp2 = [temp2;sum(sum(rel.X{j}.*A{k}))];
+            end
+            clear A;
+
+            temp = temp + temp2; clear temp2
+        end
+
+        rel.dres{1,2} = -max(abs(temp)); % Return Linfty norm of equality constraing violations
+        clear temp
+
+        rel.dres{2,2} = [];
+
+        for j = 1:numel(rel.A)
+            rel.dres{2,1} = 'Cone constraints';
+            rel.dres{2,2} = [rel.dres{2,2};min(eig(rel.X{j}))];
+        end
+end
+
+end
+

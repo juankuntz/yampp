@@ -44,7 +44,8 @@ properties
     dval = [];  % Optimal value of the dual problem.
     
     ppoint = [];    % Optimal point of the primal problem.
-    dpoint = [];    % Optimal point of the primal problem.
+    X = [];
+    lambda = [];    % (lambda,X) is the optimal point of the dual problem.
     
     pres = [];  % Primal residues.
     dres = [];  % Dual residues.
