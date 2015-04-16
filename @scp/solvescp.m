@@ -1,7 +1,6 @@
 function solvescp(cp)
 
-%
-% Juan Kuntz, 16/02/2015, last edited 16/03/2015.
+% Juan Kuntz, 16/02/2015, last edited 16/04/2015.
 
 % Extract dual point and save in sol.
 % 

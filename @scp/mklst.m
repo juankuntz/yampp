@@ -5,7 +5,7 @@ function mklst(cp)
 % The field names are different because of historical reasons, they should
 % be updated.
 
-% Juan Kuntz, 14/03/2015.
+% Juan Kuntz, 14/03/2015, last edited 16/04/2015.
 
 objs = cp.obj{1}; objf = cp.obj{2};
 
@@ -17,6 +17,7 @@ for i = 1:numel(typ)
         for k = 1:numel(objf)
             
             out{end+1}.rord =  d(j);
+            out{end}.mult = cp.mult^cp.multpow(d(j));
             out{end}.objf = objf(k);
             out{end}.objs = objs(k,:);
             

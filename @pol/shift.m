@@ -15,7 +15,9 @@ function varargout = shift(p,y)
 % transformation matrix from y to z = shift(p,y), that is z = Ty. This is
 % useful when computing the problem data.
 %
-% Juan Kuntz, 13/02/2015, last edited 10/03/2015.
+% This needs cleaning
+%
+% Juan Kuntz, 13/02/2015, last edited 16/04/2015.
 
 % Check for valid arguments.
 
@@ -24,6 +26,12 @@ if (~isa(y,'sdpvar') && ~isa(y,'seq')) || ~isa(p,'pol')
     return
 elseif isa(y,'seq') && y.dim ~= p.nvar
     disp('Error: The dimension of the underlying space of the sequence must be the same as that of the polynomial');
+    return
+end
+
+if p == pol(1)
+    varargout{1} = y;
+    varargout{2} = eye(numel(y));
     return
 end
 

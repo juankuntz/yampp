@@ -1,10 +1,10 @@
-classdef scprel
+classdef scprel < matlab.mixin.SetGet
 
 % A class to store and display the (finite dimensional) relaxations of an 
 % scp. It essentially just is a structure with some specific fields and an
 % overloaded display method.
 
-% Juan Kuntz, 15/03/2015
+% Juan Kuntz, 15/03/2015, last edited 16/04/2015.
 
 properties
     
@@ -15,11 +15,14 @@ properties
     objf = [];      % Function specifying objective.
     objs = [];      % String specifying whether we're maximising or 
                     % minimising; either inf or sup.
+    mult = [];      % Multiplier.
     FW = [];        % Factor width.
+    
     
     % Yalmip relaxation data.
     
     yvar = [];      % Yalmip variables.
+    zvar = []       % z-variable = shift(mult,yvar), in case of non-unity multipler.
     ycons = [];     % Yalmip constraints.
     yobj = [];      % Yalmip objective.
     info = [];      % Yalmip diagnostics.
@@ -45,9 +48,6 @@ properties
     
     pres = [];  % Primal residues.
     dres = [];  % Dual residues.
-    
-    
-    
     
 end
 

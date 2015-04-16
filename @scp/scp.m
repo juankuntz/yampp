@@ -3,7 +3,7 @@ classdef scp < matlab.mixin.SetGet
     % Class definition for scp: meant to model moment problems (scp is 
     % short for "sequence conic program").
     
-    % Juan Kuntz, 16/02/2015, last edited 14/03/2015.
+    % Juan Kuntz, 16/02/2015, last edited 16/04/2015.
     
     properties 
 
@@ -29,6 +29,8 @@ classdef scp < matlab.mixin.SetGet
         rlst = [];      % Cell array containing the specification of each 
                         % relaxation to be solved, used in combination with 
                         % mkscp by solvescp to build the relaxations.
+        mult = pol(1);       % Multiplier s
+        multpow = @(d) 1; % Multiplier power function d |-> multpow(d), so that the multiplier in relaxations of order d is s^multpow(d).
         
         % Solver options
         

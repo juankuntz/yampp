@@ -2,13 +2,13 @@ function rel = mkrel(cp,rspec)
 
 % Construct the appropiate moment problem.
 
-% Juan Kuntz, 13/02/2015, last edited 14/03/2015.
+% Juan Kuntz, 13/02/2015, last edited 16/04/2015.
 
 % Save data contained in rspec into rel and clear rspec.
 
 rel = scprel;
 rel.rtyp = rspec.rtyp; rel.rord = rspec.rord; rel.objf = rspec.objf; 
-rel.FW = rspec.FW; rel.objs = rspec.objs; rel.ops = rspec.ops;
+rel.FW = rspec.FW; rel.objs = rspec.objs; rel.ops = rspec.ops; rel.mult = rspec.mult;
 clear rspec;
 
 % Declare shorthands.
@@ -20,30 +20,32 @@ d = rel.rord;
 
 rel.yvar = sdpvar(nchoosek(n+2*d,2*d),1); 
 y = rel.yvar;
+rel.zvar = shift(rel.mult,y);
+z = rel.zvar;
 rel.ycons = [];
 
 % Add objective in terms of the sdpvars and store b vector in case we want 
 % to compute the dual residues later.
 
-rel.yobj = rel.objf*y;
+rel.yobj = rel.objf*z;
 
 temp = coefficients(rel.objf);
-rel.b = [temp;zeros(nchoosek(n+2*d,2*d)-numel(temp),1)];
+rel.b = [temp;zeros(nchoosek(n+2*d-deg(rel.mult),2*d-deg(rel.mult))-numel(temp),1)];
 clear temp
 
 % Add equality constraints.
 
 rel.F = []; rel.f = [];
 for i = 1:numel(cp.eqcon{2})
-    if deg(cp.eqcon{1}(i)) <= 2*d
+    if deg(cp.eqcon{1}(i)) <= 2*d-deg(rel.mult)
         temp = coefficients(cp.eqcon{1}(i))';
-        rel.F = [rel.F; [temp,zeros(1,nchoosek(n+2*d,2*d)-numel(temp))]]; % Required later to compute dual residues.
+        rel.F = [rel.F; [temp,zeros(1,nchoosek(n+2*d-deg(rel.mult),2*d-deg(rel.mult))-numel(temp))]]; % Required later to compute dual residues.
         rel.f = [rel.f;cp.eqcon{2}(i)];
         clear temp  
     end
 end
 
-rel.ycons = [rel.ycons,rel.F*y == rel.f];
+rel.ycons = [rel.ycons,rel.F*z == rel.f];
 
 % Add (linear) inequality constraints NOT IMPLEMENTED: CAREFUL WHEN
 % IMPLEMENTING, IT AFFECTS SOME INDEXING IN SOLVESCP.M. FOR EXAMPLE IN
