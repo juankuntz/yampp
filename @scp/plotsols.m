@@ -67,7 +67,7 @@ for i = 1:numel(p)
     end
     
     
-    figure(j);
+    figure(i);
     xlabel('rord'); ylabel('pval'); title(computestring(p(i)));
     
     c =  [1,0.8,0;1,0,0;0,0.7,0;0,0,1;0,1,1];
