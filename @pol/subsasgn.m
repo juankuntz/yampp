@@ -67,10 +67,14 @@ switch s.type
             for i = 1:numel(p(:,1))
                 for j = 1:numel(p(1,:))
                     p(i,j).deg = DEG;
+
+                end
+            end
+            for i = 1:numel(q(:,1))
+                for j = 1:numel(q(1,:))
                     q(i,j).deg = DEG;
                 end
             end
-
 
         end
 

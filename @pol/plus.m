@@ -3,7 +3,7 @@ function g = plus(p,q)
 % Computes the componentwise sum between two polynomials p and q of the
 % same dimensions.
 
-% Juan Kuntz, 08/02/2015, last edited 12/03/2015
+% Juan Kuntz, 08/02/2015, last edited 12/05/2015
 
 [n,m] = size(p); 
 
@@ -38,10 +38,12 @@ cleanflag = 0;
 
 if isdouble(p) 
     g = q;
-    if g.coef(2,1) == 1 % q has a nonzero zero-monomial term.
-        g.coef(1,1) = g.coef(1,1) + p;
-    else 
-        g.coef = [[p;1],g.coef];
+    if p~=0
+        if g.coef(2,1) == 1 % q has a nonzero zero-monomial term.
+            g.coef(1,1) = g.coef(1,1) + p;
+        else 
+            g.coef = [[p;1],g.coef];
+        end
     end
     return
 end
