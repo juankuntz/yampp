@@ -73,8 +73,27 @@ switch rel.rtyp
         rel = fwk(cp,rel);
     case {'psd','PSD'}
         rel = psd(cp,rel);
+    case {'nn','NN'}
+        rel = nn(cp,rel);
 end
 
+end
+
+function rel = nn(cp,rel) % D constraints.
+
+% Declare shorthands.
+
+n = cp.nvar; 
+d = rel.rord;
+y = rel.yvar;
+
+l2d = nchoosek(n+2*d,2*d);
+
+% General moment constraint: Diagonal entries of the moment matrix must be 
+% greater or equal than zero.
+       
+rel.ycons = [rel.ycons,y>=0];
+rel.A{1} = -eye(l2d); 
 end
 
 function rel = di(cp,rel) % D constraints.

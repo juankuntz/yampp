@@ -3,7 +3,7 @@ classdef scp < matlab.mixin.SetGet
     % Class definition for scp: meant to model moment problems (scp is 
     % short for "sequence conic program").
     
-    % Juan Kuntz, 16/02/2015, last edited 16/04/2015.
+    % Juan Kuntz, 16/02/2015, last edited 15/05/2015.
     
     properties 
 
@@ -69,7 +69,7 @@ classdef scp < matlab.mixin.SetGet
             try 
                 
             if isstruct(data)
-                cp.ops = {data,data,data,data,data};
+                cp.ops = {data,data,data,data,data,data};
             else
                 ops = []; label =[];
                 for i = 1:numel(data)
@@ -91,15 +91,17 @@ classdef scp < matlab.mixin.SetGet
                         temp = cp.ops;
                     switch label{i}
                         case {'d','D'}
-                            cp.ops = {ops,temp{2,end},temp{3,end},temp{4,end},temp{5,end}};
+                            cp.ops = {ops,temp{2,end},temp{3,end},temp{4,end},temp{5,end},temp{6,end}};
                         case {'dd','DD'}
-                            cp.ops = {temp{1,end},ops,temp{3,end},temp{4,end},temp{5,end}};
+                            cp.ops = {temp{1,end},ops,temp{3,end},temp{4,end},temp{5,end},temp{6,end}};
                         case {'sdd','SDD'}
-                            cp.ops = {temp{1,end},temp{2,end},ops,temp{4,end},temp{5,end}};
+                            cp.ops = {temp{1,end},temp{2,end},ops,temp{4,end},temp{5,end},temp{6,end}};
                         case {'fwk','FWK'}
-                            cp.ops = {temp{1,end},temp{2,end},temp{3,end},ops,temp{5,end}};
+                            cp.ops = {temp{1,end},temp{2,end},temp{3,end},ops,temp{5,end},temp{6,end}};
                         case {'psd','PSD'}
-                            cp.ops = {temp{1,end},temp{2,end},temp{3,end},temp{4,end},ops};
+                            cp.ops = {temp{1,end},temp{2,end},temp{3,end},temp{4,end},ops,temp{6,end}};
+                        case {'nn','NN'}
+                            cp.ops = {temp{1,end},temp{2,end},temp{3,end},temp{4,end},temp{5,end},ops};
                     end
                 end
                     
@@ -117,7 +119,7 @@ classdef scp < matlab.mixin.SetGet
                 types = cp.rtyp;
                 for i = 1:numel(data)
                    s = data{i};
-                   if ischar(s) && (strcmpi(s,'D') || strcmpi(s,'DD') || strcmpi(s,'SDD') || strcmpi(s,'PSD'))
+                   if ischar(s) && (strcmpi(s,'D') || strcmpi(s,'DD') || strcmpi(s,'SDD') || strcmpi(s,'PSD') || strcmpi(s,'NN'))
                        flg = 1;
                        for j = 1:numel(types)
                            if ischar(types{j}) && istrcmp(s,types{j})
@@ -298,7 +300,8 @@ classdef scp < matlab.mixin.SetGet
                    'DD',cp.ops{2}.solver,cp.ops{2};
                    'SDD',cp.ops{3}.solver,cp.ops{3};
                    'FWK',cp.ops{4}.solver,cp.ops{4};
-                   'PSD',cp.ops{5}.solver,cp.ops{5}};
+                   'PSD',cp.ops{5}.solver,cp.ops{5};
+                   'NN',cp.ops{6}.solver,cp.ops{6}};
         end
     end
 end

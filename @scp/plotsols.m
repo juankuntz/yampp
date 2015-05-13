@@ -3,7 +3,7 @@ function plotsols(varargin)
 % Creates scatter plots of the primal values of relaxations of cp that
 % were succesfully solved.
 
-% Juan Kuntz, 14/03/2015, last edited 16/03/2015
+% Juan Kuntz, 14/03/2015, last edited 15/05/2015
 
 p =[];
 for i = 1:nargin
@@ -36,7 +36,7 @@ end
 
 clear temp;
 
-types = {'D','DD','SDD','FWK','PSD'};
+types = {'D','DD','SDD','FWK','PSD','NN'};
 
 for i = 1:numel(p)
     
@@ -123,7 +123,7 @@ for i = 1:numel(sols)
             inf(:,end+1) = [sols{i}.rord,sols{i}.pval];
         end
     elseif sols{i}.info.problem == 1 
-        if strcmp(sols{i}.minmax,'inf') % Infeasible.
+        if strcmp(sols{i}.objs,'inf') % Infeasible.
             inf(:,end+1) = [sols{i}.rord,sols{i}.pval];
         else
             minf(:,end+1) = [sols{i}.rord,sols{i}.pval];

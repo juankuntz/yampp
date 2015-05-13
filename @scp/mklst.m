@@ -5,7 +5,7 @@ function mklst(cp)
 % The field names are different because of historical reasons, they should
 % be updated.
 
-% Juan Kuntz, 14/03/2015, last edited 16/04/2015.
+% Juan Kuntz, 14/03/2015, last edited 12/05/2015.
 
 objs = cp.obj{1}; objf = cp.obj{2};
 
@@ -43,6 +43,8 @@ for i = 1:numel(typ)
                     out{end}.ops = cp.ops{4,end};
                 case {'psd','PSD'}
                     out{end}.ops = cp.ops{5,end};
+                case {'nn','NN'}
+                    out{end}.ops = cp.ops{6,end};
             end
 
         end
