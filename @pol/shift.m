@@ -17,7 +17,7 @@ function varargout = shift(p,y)
 %
 % This needs cleaning
 %
-% Juan Kuntz, 13/02/2015, last edited 16/04/2015.
+% Juan Kuntz, 13/02/2015, last edited 14/05/2015.
 
 % Check for valid arguments.
 
@@ -48,6 +48,7 @@ T = zeros(nchoosek(p.nvar+d-p.deg,d-p.deg),nchoosek(p.nvar+d,d)); % Initialise
 
 tab = ncktab(p.nvar+p.deg+d);  % Compute appropiate table for fast grlex igrlex use.
 
+temp = zeros(p.nvar,numel(p.coef(1,:)));
 for i = 1:numel(p.coef(1,:))
     temp(:,i) = grlext(p.nvar,p.coef(2,i),tab);
 end
@@ -58,6 +59,7 @@ if isa(y,'sdpvar')
 
     % out_a = sum_b (p_b)*(y_(a+b)) where p_b denote the coefficient of p
     % corresponding to monomial b.
+    out = sdpvar(nchoosek(p.nvar+(d-p.deg),(d-p.deg)),1);
     
     for i=1:nchoosek(p.nvar+(d-p.deg),(d-p.deg));
         tempi = grlext(p.nvar,i,tab);   
@@ -66,10 +68,10 @@ if isa(y,'sdpvar')
             temp2 = igrlext(tempi+temp(:,j),tab);   
             if test == 0
                 test = 1;
-                out(i,1) =  p.coef(1,j)*y(temp2);
+                out(i) =  p.coef(1,j)*y(temp2);
                 T(i,temp2) = T(i,temp2) + p.coef(1,j);
             else
-                out(i,1) =  p.coef(1,j)*y(temp2) + out(i);
+                out(i) =  p.coef(1,j)*y(temp2) + out(i);
                 T(i,temp2) = T(i,temp2) + p.coef(1,j);
             end
         end
@@ -85,7 +87,7 @@ end
 out = seq(p.nvar,d-p.deg); % Initialise seq of appropiate dimension.
 
 ARRAY = y.coef; % The variables ARRAY and ARRAY2 are a hack needed because subsref and subsasgn for seq objects is not well developed (for example, it cannot handle y.coef(1,1) if y is seq).
-ARRAY2 = [];
+ARRAY2 = zeros(2,nchoosek(p.nvar+(d-p.deg),(d-p.deg)));
 
 % out_a = sum_b (p_b)*(y_(a+b)) where p_b denote the coefficient of p
 % corresponding to monomial b.
@@ -100,10 +102,10 @@ for i = 1:nchoosek(p.nvar+(d-p.deg),(d-p.deg));
         if ~isempty(I)
             if test == 0
                 test = 1;
-                ARRAY2 = [ARRAY2,[p.coef(1,j)*ARRAY(1,I);i]];
+                ARRAY2(:,i) = [p.coef(1,j)*ARRAY(1,I);i];
                 T(i,temp2) = T(i,temp2) + p.coef(1,j);
             else
-                ARRAY2(1,end) = ARRAY2(1,end) + p.coef(1,j)*ARRAY(1,I);
+                ARRAY2(:,i) = ARRAY2(1,end) + p.coef(1,j)*ARRAY(1,I);
                 T(i,temp2) = T(i,temp2) + p.coef(1,j);
             end
         end
